@@ -1,0 +1,95 @@
+{
+    "harvester": {
+        "brokers": [ "192.168.180.104:9092" ],
+        "topics": [ "api_gate", "test1", "test2", "sql" ],
+        "group": "tracker"
+    },
+    "editor": [
+    {
+        "topics": [ "sql" ],
+        "model": "json"
+    },
+    {
+        "topics": [ "sql" ],
+        "model": "json",
+        "data": {
+            "fields": ["json_data"]
+        }
+    },
+    {
+        "topics": [ "api_gate" ],
+        "model": "regexp",
+        "data": {
+            "regexp": "(.*)\\s(.*)\\s(.*)\\s(.*)",
+            "fields": [ "id", "file", "info", "message" ]
+        }
+    },
+    {
+        "topics": [ "sql" ],
+        "model": "remove",
+        "data": {
+            "fields": [ "id", "file", "info", "message", "user", "json_data"]
+        }
+    }
+    ],
+        "processor": [
+        {
+            "topics": [ "sql" ],
+            "rules": [
+            {
+                "model": "check_action",
+                "match": [ 
+                {
+                    "key": "sql_action",
+                    "function": "equal",
+                    "value": "delete"
+                }, {
+                    "key": "sql_user",
+                    "method": "equal",
+                    "value": "mysql_ro"
+                } ],
+                "action": {
+                    "mail": true,
+                    "break": true
+                }
+            },
+            {
+                "model": "check_where",
+                "match": [ 
+                {
+                    "key": "sql_action",
+                    "method": "equal",
+                    "value": "update"
+                }, 
+                {
+                    "key": "sql_where",
+                    "method": "equal",
+                    "value": ""
+                } ],
+                "action": {
+                    "mail": true,
+                    "break": false
+                }
+            }
+            ]
+        },
+        {
+            "topics": [ "api_gate" ],
+            "rules": [
+            {
+                "model": "common",
+                "match": [ 
+                {
+                    "key": "level",
+                    "function": "equal",
+                    "value": "error"
+                } ],
+                "action": {
+                    "mail": true,
+                    "break": true
+                }
+            }
+            ]
+        }
+    ]
+}
