@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/dearcode/crab/cache"
 	"github.com/zssky/log"
 
 	"github.com/dearcode/tracker/editor"
@@ -11,34 +12,47 @@ import (
 )
 
 var (
-	e = jsonEditor{}
+	je *jsonEditor
 )
 
 type jsonEditor struct {
+	args *cache.Cache
 }
 
 func init() {
-	editor.Register("json", &e)
+	je = &jsonEditor{
+		args: cache.NewCache(5),
+	}
+	editor.Register("json", je)
 }
 
-type jsonConfig struct {
+type jsonArgv struct {
 	Fields []string
 }
 
-func parseArgs(argv map[string]interface{}) jsonConfig {
-	jc := jsonConfig{}
+func (j *jsonEditor) parseArgs(m map[string]interface{}) jsonArgv {
+	var argv jsonArgv
 
-	if fo, ok := argv["fields"]; ok {
+	if m == nil {
+		return argv
+	}
+
+	if o := j.args.Get(fmt.Sprintf("%p", m)); o != nil {
+		return o.(jsonArgv)
+	}
+
+	if fo, ok := m["fields"]; ok {
 		for _, fo := range fo.([]interface{}) {
-			jc.Fields = append(jc.Fields, fo.(string))
+			argv.Fields = append(argv.Fields, fo.(string))
 		}
 	}
 
-	return jc
+	j.args.Add(fmt.Sprintf("%p", m), argv)
+
+	return argv
 }
 
-func (e *jsonEditor) jsonDecode(msg *meta.Message, data []byte) error {
-	log.Debugf("Unmarshal data:%s", string(data))
+func (j *jsonEditor) jsonDecode(msg *meta.Message, data []byte) error {
 	m := make(map[string]interface{})
 	if err := json.Unmarshal(data, &m); err != nil {
 		log.Errorf("Unmarshal error:%v", err)
@@ -52,21 +66,21 @@ func (e *jsonEditor) jsonDecode(msg *meta.Message, data []byte) error {
 	return nil
 }
 
-func (e *jsonEditor) Handler(msg *meta.Message, argv map[string]interface{}) error {
-	c := parseArgs(argv)
-	log.Debugf("fields:%v", c.Fields)
-	if len(c.Fields) == 0 {
-		return e.jsonDecode(msg, []byte(msg.Source))
+func (j *jsonEditor) Handler(msg *meta.Message, dm map[string]interface{}) error {
+	argv := j.parseArgs(dm)
+
+	if len(argv.Fields) == 0 {
+		return j.jsonDecode(msg, []byte(msg.Source))
 	}
 
-	for _, f := range c.Fields {
+	for _, f := range argv.Fields {
 		do, ok := msg.DataMap[f]
 		if !ok {
 			log.Errorf("key:%v not found", f)
 			return fmt.Errorf("key:%v not found", f)
 		}
 		ds := do.(string)
-		if err := e.jsonDecode(msg, []byte(ds)); err != nil {
+		if err := j.jsonDecode(msg, []byte(ds)); err != nil {
 			return err
 		}
 	}

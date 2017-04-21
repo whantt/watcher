@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"time"
 )
 
@@ -15,7 +16,7 @@ var (
 	cfg *Config
 	cs  os.FileInfo
 
-    // ErrConfigNeedInit config need init first.
+	// ErrConfigNeedInit config need init first.
 	ErrConfigNeedInit = errors.New("config need init first")
 )
 
@@ -70,7 +71,7 @@ func Init() error {
 
 	go reloadConfig()
 
-    return nil
+	return nil
 }
 
 func reloadConfig() {
@@ -84,11 +85,10 @@ func reloadConfig() {
 			continue
 		}
 
-        if s != cs {
-            loadConfig()
-        }
-
-//        fmt.Printf("s:%+v, cs:%+v\n", s, cs)
+		if !reflect.DeepEqual(s, cs) {
+			loadConfig()
+			cs = s
+		}
 
 	}
 
@@ -111,7 +111,7 @@ func loadConfig() error {
 	}
 
 	cfg = &c
-    cs = s
+	cs = s
 	return nil
 }
 

@@ -33,7 +33,7 @@ func Register(name string, m Editor) {
 	}
 
 	models[name] = m
-    log.Debugf("new mode:%v", name)
+	log.Debugf("new mode:%v", name)
 }
 
 func Run(msg *meta.Message) {
@@ -46,7 +46,7 @@ func Run(msg *meta.Message) {
 		return
 	}
 
-	for _, e := range ec.Editor {
+	for ei, e := range ec.Editor {
 		for i := range e.Topics {
 			if msg.Topic == e.Topics[i] {
 				m, ok := models[e.Model]
@@ -54,13 +54,13 @@ func Run(msg *meta.Message) {
 					msg.Trace(meta.StageEditor, e.Model, "not found")
 					continue
 				}
-                msg.Trace(meta.StageEditor, e.Model, fmt.Sprintf("begin data:%v", msg.DataMap))
-				if err = m.Handler(msg, e.Data); err != nil {
+				msg.Trace(meta.StageEditor, e.Model, fmt.Sprintf("begin data:%v", msg.DataMap))
+				if err = m.Handler(msg, ec.Editor[ei].Data); err != nil {
 					msg.SetState(meta.StateError)
 					msg.Trace(meta.StageEditor, "end", err.Error())
 					return
 				}
-                msg.Trace(meta.StageEditor, e.Model, fmt.Sprintf("end data:%v", msg.DataMap))
+				msg.Trace(meta.StageEditor, e.Model, fmt.Sprintf("end data:%v", msg.DataMap))
 				break
 			}
 		}

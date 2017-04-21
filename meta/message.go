@@ -77,7 +77,7 @@ func (s ProcessStage) String() string {
 	case StageAlertor:
 		return "Alertor"
 	}
-    return "Undefine"
+	return "Undefine"
 }
 
 func (s ProcessState) String() string {
@@ -93,7 +93,7 @@ func (s ProcessState) String() string {
 	case StateOver:
 		return "Over"
 	}
-    return "Undefine"
+	return "Undefine"
 }
 
 func (m *Message) TraceStack() string {

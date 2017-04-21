@@ -20,8 +20,8 @@
         "topics": [ "api_gate" ],
         "model": "regexp",
         "data": {
-            "regexp": "(.*)\\s(.*)\\s(.*)\\s(.*)",
-            "fields": [ "id", "file", "info", "message" ]
+            "regexp": "(\\d{4}/\\d{2}/\\d{2}\\s\\d{2}:\\d{2}:\\d{2})\\s\\[(.*)\\]\\suser:(\\w+)\\s(.*)",
+            "fields": [ "date", "level", "user", "sql" ]
         }
     },
     {
