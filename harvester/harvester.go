@@ -1,48 +1,56 @@
 package harvester
 
 import (
-	"time"
+	"errors"
 
+	"github.com/zssky/log"
+
+	"github.com/dearcode/tracker/config"
 	"github.com/dearcode/tracker/meta"
 )
 
 var (
-	h *harvester
+	models           = map[string]Harvester{}
+	ErrModelNotFound = errors.New("kafka model not found")
 )
 
-type harvester struct {
-	c chan *meta.Message
+type Harvester interface {
+	Init(c config.HarvesterConfig) error
+	Start() <-chan *meta.Message
 }
 
+//Init init harvester.
 func Init() error {
-	h = &harvester{
-		c: make(chan *meta.Message),
+	for k := range models {
+		log.Debugf("harvester model:%v", k)
 	}
 
-	go runtest()
+	ec, err := config.GetConfig()
+	if err != nil {
+		return err
+	}
 
-	return nil
+	kh, ok := models["kafka"]
+	if !ok {
+		return ErrModelNotFound
+	}
+
+	return kh.Init(ec.Harvester)
+}
+
+//Register 添加模块
+func Register(name string, m Harvester) {
+	if _, ok := models[name]; ok {
+		log.Errorf("harvester model:%v exist", name)
+		return
+	}
+
+	models[name] = m
+	log.Debugf("new mode:%v", name)
 }
 
 func Reader() <-chan *meta.Message {
-	return h.c
-}
+	kh, _ := models["kafka"]
 
-func runtest() {
-	msg := []struct {
-		topic string
-		msg   string
-	}{
-		{"api_gate", "2107/04/20 17:18:19 [error] user:mysql_rw sql:select * from a"},
-		//{"api_dbs", "2107/04/20 17:18:19 info write file success"},
-		//{"sql", `{"user":"tianguangyu", "mail": "jltgy@qq.com", "age": 123}`},
-		//{"sql", `{"json_data":"{\"user\":\"tgy\", \"password\":\"abc\"}", "id": 123}`},
-	}
-
-	t := time.NewTicker(time.Second)
-	idx := 0
-	for range t.C {
-		idx = (idx + 1) % len(msg)
-		h.c <- meta.NewMessage(msg[idx].topic, msg[idx].msg)
-	}
+	return kh.Start()
 }

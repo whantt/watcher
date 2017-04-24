@@ -12,6 +12,7 @@ import (
 	_ "github.com/dearcode/tracker/editor/regexp"
 	_ "github.com/dearcode/tracker/editor/remove"
 	"github.com/dearcode/tracker/harvester"
+	_ "github.com/dearcode/tracker/harvester/kafka"
 	"github.com/dearcode/tracker/meta"
 	"github.com/dearcode/tracker/processor"
 	_ "github.com/dearcode/tracker/processor/common"
