@@ -34,22 +34,26 @@ type EditorConfig struct {
 
 type MatchConfig struct {
 	Key    string `json:"key"`
-	Val    string `json:"val"`
+	Value  string `json:"value"`
 	Method string `json:"method"`
 }
 
 //ActionConfig 配置成功后要执行的动作.
 type ActionConfig struct {
-	Mail      bool     `json:"mail"`
-	MailTo    []string `json:"mail_to"`
-	Message   bool     `json:"message"`
-	MessageTo []string `json:"message_to"`
-	Break     bool     `json:"break"`
+	Mail        bool     `json:"mail"`
+	MailTo      []string `json:"mail_to"`
+	MailTitle   string   `json:"mail_title"`
+	MailBody    string   `json:"mail_body"`
+	Message     bool     `json:"message"`
+	MessageTo   []string `json:"message_to"`
+	MessageBody string   `json:"message_body"`
 }
 
+//RulesConfig 一个过滤事件.
 type RulesConfig struct {
-	Model string        `json:"model"`
-	Match []MatchConfig `json:"match"`
+	Model  string        `json:"model"`
+	Match  []MatchConfig `json:"match"`
+	Action ActionConfig  `json:"action"`
 }
 
 type ProcessorConfig struct {

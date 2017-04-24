@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"time"
+
+	"github.com/dearcode/tracker/config"
 )
 
 type ProcessStage int
@@ -40,9 +42,11 @@ type traceInfo struct {
 type Message struct {
 	Topic   string
 	Source  string
+	Notice  string
 	DataMap map[string]interface{}
 	state   ProcessState
 	trace   [StageMAX]traceInfo
+	action  config.ActionConfig
 }
 
 func NewMessage(topic, log string) *Message {

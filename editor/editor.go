@@ -36,14 +36,10 @@ func Register(name string, m Editor) {
 	log.Debugf("new mode:%v", name)
 }
 
-func Run(msg *meta.Message) {
-	msg.Trace(meta.StageEditor, "begin", msg.Source)
-
+func Run(msg *meta.Message) error {
 	ec, err := config.GetConfig()
 	if err != nil {
-		msg.SetState(meta.StateError)
-		msg.Trace(meta.StageEditor, "end", err.Error())
-		return
+		return err
 	}
 
 	for ei, e := range ec.Editor {
@@ -56,9 +52,7 @@ func Run(msg *meta.Message) {
 				}
 				msg.Trace(meta.StageEditor, e.Model, fmt.Sprintf("begin data:%v", msg.DataMap))
 				if err = m.Handler(msg, ec.Editor[ei].Data); err != nil {
-					msg.SetState(meta.StateError)
-					msg.Trace(meta.StageEditor, "end", err.Error())
-					return
+					return err
 				}
 				msg.Trace(meta.StageEditor, e.Model, fmt.Sprintf("end data:%v", msg.DataMap))
 				break
@@ -66,5 +60,5 @@ func Run(msg *meta.Message) {
 		}
 	}
 
-	msg.Trace(meta.StageEditor, "end", fmt.Sprintf("data:%v", msg.DataMap))
+	return nil
 }

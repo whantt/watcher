@@ -41,7 +41,7 @@
                 "match": [ 
                 {
                     "key": "sql_action",
-                    "function": "equal",
+                    "method": "equal",
                     "value": "delete"
                 }, {
                     "key": "sql_user",
@@ -80,9 +80,45 @@
                 "model": "common",
                 "match": [ 
                 {
+                    "key": "user",
+                    "method": "equal",
+                    "value": "mysql_rw"
+                } ],
+                "action": {
+                    "mail": true,
+                    "break": true
+                }
+            }
+            ]
+        },
+        {
+            "topics": [ "api_gate" ],
+            "rules": [
+            {
+                "model": "common",
+                "match": [ 
+                {
                     "key": "level",
-                    "function": "equal",
+                    "method": "equal",
                     "value": "error"
+                } ],
+                "action": {
+                    "mail": true,
+                    "break": true
+                }
+            }
+            ]
+        },
+        {
+            "topics": [ "api_gate" ],
+            "rules": [
+            {
+                "model": "regexp",
+                "match": [ 
+                {
+                    "key": "level",
+                    "method": "match",
+                    "value": "**"
                 } ],
                 "action": {
                     "mail": true,

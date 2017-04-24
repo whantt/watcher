@@ -33,10 +33,10 @@ func runtest() {
 		topic string
 		msg   string
 	}{
-		{"api_dbs", "2107/04/20 17:18:19 error mysql_rw select * from a"},
-		{"api_dbs", "2107/04/20 17:18:19 info write file success"},
-		{"sql", `{"user":"tianguangyu", "mail": "jltgy@qq.com", "age": 123}`},
-        {"sql", `{"json_data":"{\"user\":\"tgy\", \"password\":\"abc\"}", "id": 123}`},
+		{"api_gate", "2107/04/20 17:18:19 [error] user:mysql_rw sql:select * from a"},
+		//{"api_dbs", "2107/04/20 17:18:19 info write file success"},
+		//{"sql", `{"user":"tianguangyu", "mail": "jltgy@qq.com", "age": 123}`},
+		//{"sql", `{"json_data":"{\"user\":\"tgy\", \"password\":\"abc\"}", "id": 123}`},
 	}
 
 	t := time.NewTicker(time.Second)
