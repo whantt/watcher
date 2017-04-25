@@ -1,2 +1,4 @@
 # tracker
-基于kafka的流式过滤处理系统
+流式消息过滤处理系统  
+
+![Tracker](https://raw.githubusercontent.com/dearcode/tracker/master/docs/tracker.png "Tracker")  
