@@ -2,9 +2,11 @@ package mail
 
 import (
 	"bytes"
+	"crypto/tls"
 	"text/template"
 
 	"github.com/zssky/log"
+	"gopkg.in/gomail.v2"
 
 	"github.com/dearcode/tracker/alertor"
 	"github.com/dearcode/tracker/config"
@@ -16,8 +18,6 @@ var (
 )
 
 type mailAlertor struct {
-	title string
-	body  string
 }
 
 func init() {
@@ -36,7 +36,7 @@ func (ma *mailAlertor) Handler(msg *meta.Message, ac config.ActionConfig) error 
 		return err
 	}
 
-	ma.title = buf.String()
+	title := buf.String()
 
 	buf.Truncate(0)
 
@@ -49,11 +49,33 @@ func (ma *mailAlertor) Handler(msg *meta.Message, ac config.ActionConfig) error 
 		return err
 	}
 
-	ma.body = buf.String()
+	body := buf.String()
 
-	return ma.send()
+	return ma.send(ac.MailTo, title, body)
 }
 
-func (ma *mailAlertor) send() error {
+func (ma *mailAlertor) send(to []string, title, body string) error {
+	ec, err := config.GetConfig()
+	if err != nil {
+		return err
+	}
+
+	d := gomail.NewDialer(ec.Alertor.Mail.Host, ec.Alertor.Mail.Port, ec.Alertor.Mail.User, ec.Alertor.Mail.Password)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	sc, err := d.Dial()
+	if err != nil {
+		return err
+	}
+	defer sc.Close()
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", ec.Alertor.Mail.From)
+	m.SetHeader("To", to...)
+	m.SetHeader("Subject", title)
+	m.SetBody("text/html", body)
+
+	if err = sc.Send(ec.Alertor.Mail.From, to, m); err != nil {
+		return err
+	}
 	return nil
 }

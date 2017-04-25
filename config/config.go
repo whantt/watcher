@@ -61,10 +61,30 @@ type ProcessorConfig struct {
 	Rules  []RulesConfig `json:"rules"`
 }
 
+type AlertorMailConfig struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	From     string `json:"from"`
+	Password string `json:"password"`
+}
+
+type AlertorMessageConfig struct {
+	URL       string `json:"url"`
+	Account   string `json:"account"`
+	Extension string `json:"extension"`
+}
+
+type AlertorConfig struct {
+	Mail    AlertorMailConfig    `json:"mail"`
+	Message AlertorMessageConfig `json::"message"`
+}
+
 type Config struct {
 	Harvester HarvesterConfig   `json:"harvester"`
 	Editor    []EditorConfig    `json:"editor"`
 	Processor []ProcessorConfig `json:"processor"`
+	Alertor   AlertorConfig     `json:"alertor"`
 }
 
 //Init 加载配置文件

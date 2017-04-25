@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"text/template"
 
+	"github.com/zssky/Mole/models/sms"
 	"github.com/zssky/log"
+	"github.com/zssky/tc"
 
 	"github.com/dearcode/tracker/alertor"
 	"github.com/dearcode/tracker/config"
@@ -16,7 +18,6 @@ var (
 )
 
 type messageAlertor struct {
-	body string
 }
 
 func init() {
@@ -34,12 +35,33 @@ func (ma *messageAlertor) Handler(msg *meta.Message, ac config.ActionConfig) err
 		log.Errorf("Execute message body error:%v, src:%v", err, ac.MessageBody)
 		return err
 	}
-	ma.body = buf.String()
 
-	return ma.send()
+	return ma.send(ac.MessageTo, buf.String())
 }
 
-//send TODO
-func (ma *messageAlertor) send() error {
+func (ma *messageAlertor) send(to []string, body string) error {
+	ec, err := config.GetConfig()
+	if err != nil {
+		return err
+	}
+
+	is := &sms.SMS{
+		SMSBaseInfo: sms.SMSBaseInfo{
+			SenderNum: ec.Alertor.Message.Account,
+			Extension: ec.Alertor.Message.Extension,
+		},
+		MobileNums: make([]sms.MobileInfo, len(to)),
+		MsgContent: body,
+	}
+
+	for i, m := range to {
+		is.MobileNums[i] = sms.MobileInfo{MobileNum: tc.TrimSpace(m)}
+	}
+
+	if err = sms.SendSMS(ec.Alertor.Message.URL, is); err != nil {
+		log.Errorf("send sms error:%v", err)
+		return err
+	}
+
 	return nil
 }
