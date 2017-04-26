@@ -37,6 +37,7 @@ func HandleSql(msg *meta.Message) error {
 	return sql(msg)
 
 }
+
 // sql 通过语法树分析sql的类型，表明，条件
 func sql(msg *meta.Message) error {
 	sql := msg.DataMap["sql"].(string)
@@ -61,6 +62,15 @@ func sql(msg *meta.Message) error {
 			msg.DataMap["table"] = tableBuf.String()
 			msg.DataMap["condition"] = whereBuf.String()
 			return false, nil
+		case *sqlparser.Delete:
+			tableBuf := sqlparser.NewTrackedBuffer(nil)
+			node.(*sqlparser.Delete).Table.Format(tableBuf, sqlparser.NonReWriteSQL)
+			whereBuf := sqlparser.NewTrackedBuffer(nil)
+			node.(*sqlparser.Delete).Where.Format(whereBuf, sqlparser.NonReWriteSQL)
+			msg.DataMap["action"] = "Delete"
+			msg.DataMap["table"] = tableBuf.String()
+			msg.DataMap["condition"] = whereBuf.String()
+			return false, nil
 
 		case *sqlparser.Insert:
 			tableBuf := sqlparser.NewTrackedBuffer(nil)
@@ -80,6 +90,7 @@ func sql(msg *meta.Message) error {
 			msg.DataMap["table"] = tableBuf.String()
 			msg.DataMap["condition"] = ""
 			return false, nil
+
 		case *sqlparser.Other:
 			msg.DataMap["action"] = "Other"
 			msg.DataMap["table"] = "Other"
@@ -90,7 +101,7 @@ func sql(msg *meta.Message) error {
 
 		}
 	}, tree)
-	log.Infof("%v",msg.DataMap)
+	log.Infof("%v", msg.DataMap)
 	if err != nil {
 		log.Errorf("input: %s, err: %v", sql, err)
 		return err
