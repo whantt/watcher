@@ -37,6 +37,7 @@ func HandleSql(msg *meta.Message) error {
 	return sql(msg)
 
 }
+// sql 通过语法树分析sql的类型，表明，条件
 func sql(msg *meta.Message) error {
 	sql := msg.DataMap["sql"].(string)
 	tree, err := sqlparser.Parse(sql)
