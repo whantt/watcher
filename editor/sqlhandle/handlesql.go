@@ -43,41 +43,40 @@ func sql(msg *meta.Message) error {
 	sqlparser.Walk(func(node sqlparser.SQLNode) (kontinue bool, err error) {
 		switch node.(type) {
 		case *sqlparser.Select:
-			buf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Select).From.Format(buf, sqlparser.NonReWriteSQL)
-			buf1 := sqlparser.NewTrackedBuffer(nil)
+			tableBuf := sqlparser.NewTrackedBuffer(nil)
+			node.(*sqlparser.Select).From.Format(tableBuf, sqlparser.NonReWriteSQL)
+			whereBuf := sqlparser.NewTrackedBuffer(nil)
+			node.(*sqlparser.Select).Where.Format(whereBuf, sqlparser.NonReWriteSQL)
 			msg.DataMap["action"] = "Select"
-			msg.DataMap["table"] = buf.String()
-			msg.DataMap["condition"] = buf1.String()
-
+			msg.DataMap["table"] = tableBuf.String()
+			msg.DataMap["condition"] = whereBuf.String()
 			return false, nil
-
 		case *sqlparser.Update:
-			buf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Update).Table.Format(buf, sqlparser.NonReWriteSQL)
-			buf1 := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Update).Where.Format(buf1, sqlparser.NonReWriteSQL)
+			tableBuf := sqlparser.NewTrackedBuffer(nil)
+			node.(*sqlparser.Update).Table.Format(tableBuf, sqlparser.NonReWriteSQL)
+			whereBuf := sqlparser.NewTrackedBuffer(nil)
+			node.(*sqlparser.Update).Where.Format(whereBuf, sqlparser.NonReWriteSQL)
 			msg.DataMap["action"] = "Update"
-			msg.DataMap["table"] = buf.String()
-			msg.DataMap["condition"] = buf1.String()
+			msg.DataMap["table"] = tableBuf.String()
+			msg.DataMap["condition"] = whereBuf.String()
 			return false, nil
 
 		case *sqlparser.Insert:
-			buf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Insert).Table.Format(buf, sqlparser.NonReWriteSQL)
-			buf1 := sqlparser.NewTrackedBuffer(nil)
+			tableBuf := sqlparser.NewTrackedBuffer(nil)
+			node.(*sqlparser.Insert).Table.Format(tableBuf, sqlparser.NonReWriteSQL)
+			whereBuf := sqlparser.NewTrackedBuffer(nil)
 
 			msg.DataMap["action"] = "Insert"
-			msg.DataMap["table"] = buf.String()
-			msg.DataMap["condition"] = buf1.String()
+			msg.DataMap["table"] = tableBuf.String()
+			msg.DataMap["condition"] = whereBuf.String()
 			return false, nil
 
 		case *sqlparser.DDL:
-			buf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.DDL).Table.Format(buf, sqlparser.NonReWriteSQL)
+			tableBuf := sqlparser.NewTrackedBuffer(nil)
+			node.(*sqlparser.DDL).Table.Format(tableBuf, sqlparser.NonReWriteSQL)
 
 			msg.DataMap["action"] = node.(*sqlparser.DDL).Action
-			msg.DataMap["table"] = buf.String()
+			msg.DataMap["table"] = tableBuf.String()
 			msg.DataMap["condition"] = ""
 			return false, nil
 		case *sqlparser.Other:
@@ -90,6 +89,7 @@ func sql(msg *meta.Message) error {
 
 		}
 	}, tree)
+	log.Infof("%v",msg.DataMap)
 	if err != nil {
 		log.Errorf("input: %s, err: %v", sql, err)
 		return err

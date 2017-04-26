@@ -14,11 +14,15 @@ import (
 func TestHandleSQL(t *testing.T) {
 
 	dm := make(map[string]interface{})
-	dm["sql"] = "select * from t where id>3;"
+	dm["sql"] = "select ff.freight_type as freightType, ff.id as freightId, ff.yn as freightYn from fms_freight as ff where ff.id = 2 and ff.route_id =1 "
 
 	msg := &meta.Message{
 		DataMap: dm,
 	}
 	sqlhandle.HandleSql(msg)
-	fmt.Println(msg)
+	fmt.Println("action ",msg.DataMap["action"])
+	fmt.Println("table",msg.DataMap["table"])
+
+	fmt.Println("condition",msg.DataMap["condition"])
+
 }
