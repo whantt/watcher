@@ -51,7 +51,6 @@ type ActionConfig struct {
 
 //RulesConfig 一个过滤事件.
 type RulesConfig struct {
-	Model  string        `json:"model"`
 	Match  []MatchConfig `json:"match"`
 	Action ActionConfig  `json:"action"`
 }

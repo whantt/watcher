@@ -10,33 +10,12 @@ import (
 )
 
 var (
-	models = map[string]Processor{}
-
 	ErrNoMatch = errors.New("rules no match")
 )
 
-type Processor interface {
-	Handler(msg *meta.Message, mc []config.MatchConfig) (bool, error)
-}
-
 //Init init processor.
 func Init() error {
-	for k := range models {
-		log.Debugf("processor model:%v", k)
-	}
-
 	return nil
-}
-
-//Register 添加模块
-func Register(name string, m Processor) {
-	if _, ok := models[name]; ok {
-		log.Errorf("processor model:%v exist", name)
-		return
-	}
-
-	models[name] = m
-	log.Debugf("new processor mode:%v", name)
 }
 
 func Run(msg *meta.Message) (config.ActionConfig, error) {
@@ -45,33 +24,43 @@ func Run(msg *meta.Message) (config.ActionConfig, error) {
 		return config.ActionConfig{}, err
 	}
 
-	for pi, p := range c.Processor {
+	for _, p := range c.Processor {
 		for i := range p.Topics {
 			if msg.Topic == p.Topics[i] {
 				log.Debugf("topic:%v rules:%v", msg.Topic, p.Rules)
 				for _, r := range p.Rules {
-					m, ok := models[r.Model]
-					if !ok {
-						msg.Trace(meta.StageProcessor, r.Model, "not found")
+					if len(r.Match) == 0 {
 						continue
 					}
-
-					msg.Trace(meta.StageProcessor, r.Model, fmt.Sprintf("begin data:%v, rules:%v", msg.DataMap, r.Match))
-					ok, err := m.Handler(msg, r.Match)
+					ok, err := handler(msg, r.Match)
 					if err != nil {
-						msg.Trace(meta.StageProcessor, r.Model, err.Error())
 						return config.ActionConfig{}, err
 					}
 					if ok {
-						log.Debugf("rule:%v, model:%v action:%#v", r.Match, r.Model, r.Action)
-						msg.Trace(meta.StageProcessor, r.Model, fmt.Sprintf("match rules:%v", c.Processor[pi].Rules))
 						return r.Action, nil
 					}
-					msg.Trace(meta.StageProcessor, r.Model, fmt.Sprintf("end no match data:%v", msg.DataMap))
 				}
 			}
 		}
 	}
 
 	return config.ActionConfig{}, ErrNoMatch
+}
+
+func handler(msg *meta.Message, mc []config.MatchConfig) (bool, error) {
+	var val string
+
+	for _, m := range mc {
+		vo, exist := msg.DataMap[m.Key]
+		if exist {
+			val = vo.(string)
+		}
+        msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("begin key:%v, exist:%v expr `%v` `%v`", m.Key, exist, val, m.Value))
+		if !match(m.Method, exist, val, m.Value) {
+            msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("end key:%v no match `%v` `%v`", m.Key, val, m.Value))
+			return false, nil
+		}
+        msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("end key:%v match `%v` ` %v`", m.Key, val, m.Value))
+	}
+	return true, nil
 }

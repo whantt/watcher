@@ -102,12 +102,34 @@
                         {
                             "key": "action",
                             "method": "equal",
-                            "value": "Select"
+                            "value": "Delete"
                         },
                         {
-                            "key": "table",
+                            "key": "condition",
                             "method": "equal",
-                            "value": "fms_freight as ff"
+                            "value": ""
+                        }
+                    ],
+                    "action": {
+                        "mail": true,
+                        "mail_to": ["tianguangyu@jd.com"],
+                        "mail_title":"sql common action Select table fms_freigh",
+                        "mail_body": "action:{{.action}} table:{{.table}}<br/> ",
+                        "message": true
+                    }
+                },
+                {
+                    "model": "common",
+                    "match": [
+                        {
+                            "key": "action",
+                            "method": "equal",
+                            "value": "Update"
+                        },
+                        {
+                            "key": "condition",
+                            "method": "equal",
+                            "value": ""
                         }
                     ],
                     "action": {

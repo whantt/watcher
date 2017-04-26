@@ -16,7 +16,6 @@ import (
 	_ "github.com/dearcode/tracker/harvester/kafka"
 	"github.com/dearcode/tracker/meta"
 	"github.com/dearcode/tracker/processor"
-	_ "github.com/dearcode/tracker/processor/common"
 )
 
 func main() {
@@ -45,7 +44,7 @@ func main() {
 }
 
 func worker(msg <-chan *meta.Message) {
-	m := meta.NewMessage("sql", `I0426 11:21:40.488165      39 sql_log.go:54] json_data:{"name":"mysql_rw","addr":"192.168.81.31:48790","sql":"select ff.freight_type as freightType, ff.id as freightId, ff.yn as freightYn from fms_freight as ff where ff.id = :fsft_freight_id and ff.route_id = :vtg1","sendQueryDate":"17-4-26 11:21:40.482482612","recvResultDate":"17-4-26 11:21:40.488147166","sqlExecDuration":5664554,"datanodes":[{"name":"-50","tabletType":1,"idx":1,"sendDate":"17-4-26 11:21:40.482482612","recvDate":"17-4-26 11:21:40.488141224","shardExecuteTime":5658612}]}`)
+	m := meta.NewMessage("sql", `I0426 11:21:40.488165      39 sql_log.go:54] json_data:{"name":"mysql_rw","addr":"192.168.81.31:48790","sql":"update fms_freight set id=1 where id=2","sendQueryDate":"17-4-26 11:21:40.482482612","recvResultDate":"17-4-26 11:21:40.488147166","sqlExecDuration":5664554,"datanodes":[{"name":"-50","tabletType":1,"idx":1,"sendDate":"17-4-26 11:21:40.482482612","recvDate":"17-4-26 11:21:40.488141224","shardExecuteTime":5658612}]}`)
 	/*
 		for msg := range harvester.Reader() {
 			run(msg)
