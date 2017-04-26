@@ -5,9 +5,9 @@
 package test
 
 import (
-	"testing"
 	"fmt"
 	"github.com/youtube/vitess/go/vt/sqlparser"
+	"testing"
 )
 
 func TestValid(t *testing.T) {
@@ -841,70 +841,66 @@ func TestCaseSensitivity(t *testing.T) {
 			case *sqlparser.Select:
 				buf := sqlparser.NewTrackedBuffer(nil)
 				node.(*sqlparser.Select).From.Format(buf, sqlparser.NonReWriteSQL)
-				fmt.Println("原始的sql: ",tcase.input)
+				fmt.Println("原始的sql: ", tcase.input)
 				fmt.Println("table_name : ", buf.String())
-				buf1:=sqlparser.NewTrackedBuffer(nil)
-				node.(*sqlparser.Select).Where.Format(buf1,sqlparser.NonReWriteSQL)
+				buf1 := sqlparser.NewTrackedBuffer(nil)
+				node.(*sqlparser.Select).Where.Format(buf1, sqlparser.NonReWriteSQL)
 				fmt.Println("where 条件 : ", buf1.String())
-				fmt.Println("action : ","Select")
+				fmt.Println("action : ", "Select")
 
 				fmt.Println("++++++++++++++++++++++++++++++++++++++")
-
 
 				return false, nil
 
 			case *sqlparser.Update:
 				buf := sqlparser.NewTrackedBuffer(nil)
 				node.(*sqlparser.Update).Table.Format(buf, sqlparser.NonReWriteSQL)
-				fmt.Println("原始的sql: ",tcase.input)
+				fmt.Println("原始的sql: ", tcase.input)
 				fmt.Println("table_name : ", buf.String())
-				buf1:=sqlparser.NewTrackedBuffer(nil)
-				node.(*sqlparser.Update).Where.Format(buf1,sqlparser.NonReWriteSQL)
+				buf1 := sqlparser.NewTrackedBuffer(nil)
+				node.(*sqlparser.Update).Where.Format(buf1, sqlparser.NonReWriteSQL)
 				fmt.Println("where 条件 : ", buf1.String())
-				fmt.Println("action : ","Update")
+				fmt.Println("action : ", "Update")
 
 				fmt.Println("++++++++++++++++++++++++++++++++++++++")
-
 
 				return false, nil
 
 			case *sqlparser.Insert:
 				buf := sqlparser.NewTrackedBuffer(nil)
 				node.(*sqlparser.Insert).Table.Format(buf, sqlparser.NonReWriteSQL)
-				fmt.Println("原始的sql: ",tcase.input)
+				fmt.Println("原始的sql: ", tcase.input)
 				fmt.Println("table_name : ", buf.String())
-				buf1:=sqlparser.NewTrackedBuffer(nil)
+				buf1 := sqlparser.NewTrackedBuffer(nil)
 				//node.(*sqlhandle.Insert).Where.Format(buf1,sqlhandle.NonReWriteSQL)
 				fmt.Println("where 条件 : ", buf1.String())
-				fmt.Println("action : ","Insert")
+				fmt.Println("action : ", "Insert")
 
 				fmt.Println("++++++++++++++++++++++++++++++++++++++")
-
 
 				return false, nil
 
 			case *sqlparser.DDL:
 				buf := sqlparser.NewTrackedBuffer(nil)
 				node.(*sqlparser.DDL).Table.Format(buf, sqlparser.NonReWriteSQL)
-				fmt.Println("原始的sql: ",tcase.input)
+				fmt.Println("原始的sql: ", tcase.input)
 				fmt.Println("table_name : ", buf.String())
-				buf1:=sqlparser.NewTrackedBuffer(nil)
+				buf1 := sqlparser.NewTrackedBuffer(nil)
 				//node.(*sqlhandle.DDL).Action.Format(buf1,sqlhandle.NonReWriteSQL)
 				fmt.Println("where 条件 : ", buf1.String())
-				fmt.Println("action : ",node.(*sqlparser.DDL).Action)
+				fmt.Println("action : ", node.(*sqlparser.DDL).Action)
 
 				fmt.Println("++++++++++++++++++++++++++++++++++++++")
-
 
 				return false, nil
 			case *sqlparser.Other:
-				fmt.Println("原始的sql: ",tcase.input)
-				fmt.Println("table_name : ","Orther")
+				fmt.Println("原始的sql: ", tcase.input)
+				fmt.Println("table_name : ", "Orther")
 				fmt.Println("where 条件 : ", "Orther")
-				fmt.Println("action : ","Orther")
+				fmt.Println("action : ", "Orther")
 
 				fmt.Println("++++++++++++++++++++++++++++++++++++++")
-				return false,  nil
+				return false, nil
 			default:
 				return true, nil
 

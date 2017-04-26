@@ -16,7 +16,14 @@
             "topics": [
                 "sql"
             ],
-            "model": "json"
+            "model": "regexp",
+            "data": {
+                "regexp": "(.*)\\sjson_data:(.*)",
+                "fields": [
+                    "date",
+                    "json_data"
+                ]
+            }
         },
         {
             "topics": [
@@ -28,6 +35,28 @@
                     "json_data"
                 ]
             }
+        },
+        {
+            "topics": [
+                "sql"
+            ],
+            "model": "remove",
+            "data": {
+                "fields": [
+                    "id",
+                    "file",
+                    "info",
+                    "message",
+                    "user",
+                    "json_data"
+                ]
+            }
+        },
+        {
+            "topics": [
+                "sql"
+            ],
+            "model": "sqlhandle"
         },
         {
             "topics": [
@@ -71,18 +100,21 @@
                     "model": "common",
                     "match": [
                         {
-                            "key": "sql_action",
+                            "key": "action",
                             "method": "equal",
-                            "value": "update"
+                            "value": "Select"
                         },
                         {
-                            "key": "sql_where",
+                            "key": "table",
                             "method": "equal",
-                            "value": ""
+                            "value": "fms_freight as ff"
                         }
                     ],
                     "action": {
                         "mail": true,
+                        "mail_to": ["tianguangyu@jd.com"],
+                        "mail_title":"sql common action Select table fms_freigh",
+                        "mail_body": "action:{{.action}} table:{{.table}}<br/> ",
                         "message": true
                     }
                 },
@@ -171,12 +203,12 @@
             ]
         }
     ],
-    "alter": {
+    "alertor": {
         "mail": {
             "host": "smtp.jd.com",
             "port": 587,
             "user": "tianguangyu",
-            "password": "xxx"
+            "password": "1122123123"
         },
         "message": {
             "url": "http://192.168.155.71:36618/com.jd.mobilePhoneMsg.sender.client.service.SmsMessageRpcService/test/sendBatchSmsMessage"

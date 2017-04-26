@@ -60,6 +60,7 @@ func (ma *mailAlertor) send(to []string, title, body string) error {
 		return err
 	}
 
+	log.Debugf("config:%v", ec.Alertor.Mail)
 	d := gomail.NewDialer(ec.Alertor.Mail.Host, ec.Alertor.Mail.Port, ec.Alertor.Mail.User, ec.Alertor.Mail.Password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	sc, err := d.Dial()

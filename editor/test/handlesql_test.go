@@ -5,19 +5,19 @@
 package test
 
 import (
-	"testing"
-	"github.com/dearcode/tracker/meta"
-	"github.com/dearcode/tracker/editor/sqlhandle"
 	"fmt"
+	"github.com/dearcode/tracker/editor/sqlhandle"
+	"github.com/dearcode/tracker/meta"
+	"testing"
 )
 
-func TestHandleSQL(t *testing.T){
+func TestHandleSQL(t *testing.T) {
 
-	dm:=make(map[string]interface{})
-	dm["sql"]="select * from t where id>3;"
+	dm := make(map[string]interface{})
+	dm["sql"] = "select * from t where id>3;"
 
-	msg :=&meta.Message{
-		DataMap:dm,
+	msg := &meta.Message{
+		DataMap: dm,
 	}
 	sqlhandle.HandleSql(msg)
 	fmt.Println(msg)

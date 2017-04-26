@@ -54,7 +54,7 @@ func Run(msg *meta.Message) error {
 				if err = m.Handler(msg, ec.Editor[ei].Data); err != nil {
 					return err
 				}
-				msg.Trace(meta.StageEditor, e.Model, fmt.Sprintf("end data:%v", msg.DataMap))
+				msg.Trace(meta.StageEditor, e.Model, fmt.Sprintf("end data:%#v", msg.DataMap))
 				break
 			}
 		}
