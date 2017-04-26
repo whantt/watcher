@@ -1,0 +1,28 @@
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/bsm/sarama-cluster"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/dearcode/crab"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/youtube/vitess"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/zssky/Mole"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/zssky/log"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/zssky/tc"
+
+[[dependencies]]
+  branch = "master"
+  name = "gopkg.in/gomail.v2"
