@@ -36,7 +36,7 @@ func Register(name string, a Alertor) {
 }
 
 func Run(msg *meta.Message, ac config.ActionConfig) error {
-	log.Debugf("msg:%v, action:%v", msg, ac)
+	log.Debugf("msg:%#v, action:%v", msg.DataMap, ac)
 	if ac.Mail {
 		if m, ok := models["mail"]; ok {
 			if err := m.Handler(msg, ac); err != nil {

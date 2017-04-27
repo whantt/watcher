@@ -12,6 +12,9 @@ vendor
 *.[568vq]
 [568vq].out
 
+# config
+config/tracker.json
+
 *.cgo1.go
 *.cgo2.c
 _cgo_defun.c

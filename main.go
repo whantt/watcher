@@ -1,6 +1,10 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/zssky/log"
 
 	"github.com/dearcode/tracker/alertor"
@@ -40,19 +44,31 @@ func main() {
 	}
 
 	//正式应该多线程
-	worker(harvester.Reader())
+	for i := 0; i < 10; i++ {
+		go worker(harvester.Reader())
+	}
+
+	shutdown := make(chan os.Signal)
+	signal.Notify(shutdown, syscall.SIGUSR1, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT)
+
+	s := <-shutdown
+	log.Warningf("recv signal %v, close.", s)
+	harvester.Stop()
+	log.Warningf("server exit")
 }
 
 func worker(msg <-chan *meta.Message) {
-	m := meta.NewMessage("sql", `I0426 11:21:40.488165      39 sql_log.go:54] json_data:{"name":"mysql_rw","addr":"192.168.81.31:48790","sql":"update fms_freight set id=1 where id=2","sendQueryDate":"17-4-26 11:21:40.482482612","recvResultDate":"17-4-26 11:21:40.488147166","sqlExecDuration":5664554,"datanodes":[{"name":"-50","tabletType":1,"idx":1,"sendDate":"17-4-26 11:21:40.482482612","recvDate":"17-4-26 11:21:40.488141224","shardExecuteTime":5658612}]}`)
 	/*
-		for msg := range harvester.Reader() {
-			run(msg)
-			log.Infof("msg trace:%v", msg.TraceStack())
-		}
+		m := meta.NewMessage("sql", `I0426 11:21:40.488165      39 sql_log.go:54] json_data:{"name":"mysql_rw","addr":"192.168.81.31:48790","sql":"update fms_freight set id=1 where id=2","sendQueryDate":"17-4-26 11:21:40.482482612","recvResultDate":"17-4-26 11:21:40.488147166","sqlExecDuration":5664554,"datanodes":[{"name":"-50","tabletType":1,"idx":1,"sendDate":"17-4-26 11:21:40.482482612","recvDate":"17-4-26 11:21:40.488141224","shardExecuteTime":5658612}]}`)
 	*/
-	run(m)
-	log.Debugf("trace:%v", m.TraceStack())
+	for msg := range harvester.Reader() {
+		run(msg)
+		//	log.Infof("msg trace:%v", msg.TraceStack())
+	}
+	/*
+		run(m)
+		log.Debugf("trace:%v", m.TraceStack())
+	*/
 }
 
 func run(msg *meta.Message) {

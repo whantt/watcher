@@ -17,6 +17,7 @@ var (
 type Harvester interface {
 	Init(c config.HarvesterConfig) error
 	Start() <-chan *meta.Message
+	Stop()
 }
 
 //Init init harvester.
@@ -53,4 +54,9 @@ func Reader() <-chan *meta.Message {
 	kh, _ := models["kafka"]
 
 	return kh.Start()
+}
+
+func Stop() {
+	kh, _ := models["kafka"]
+	kh.Stop()
 }

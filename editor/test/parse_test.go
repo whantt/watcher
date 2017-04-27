@@ -840,11 +840,11 @@ func TestCaseSensitivity(t *testing.T) {
 			switch node.(type) {
 			case *sqlparser.Select:
 				buf := sqlparser.NewTrackedBuffer(nil)
-				node.(*sqlparser.Select).From.Format(buf )
+				node.(*sqlparser.Select).From.Format(buf)
 				fmt.Println("原始的sql: ", tcase.input)
 				fmt.Println("table_name : ", buf.String())
 				buf1 := sqlparser.NewTrackedBuffer(nil)
-				node.(*sqlparser.Select).Where.Format(buf1 )
+				node.(*sqlparser.Select).Where.Format(buf1)
 				fmt.Println("where 条件 : ", buf1.String())
 				fmt.Println("action : ", "Select")
 
@@ -854,11 +854,11 @@ func TestCaseSensitivity(t *testing.T) {
 
 			case *sqlparser.Update:
 				buf := sqlparser.NewTrackedBuffer(nil)
-				node.(*sqlparser.Update).Table.Format(buf )
+				node.(*sqlparser.Update).Table.Format(buf)
 				fmt.Println("原始的sql: ", tcase.input)
 				fmt.Println("table_name : ", buf.String())
 				buf1 := sqlparser.NewTrackedBuffer(nil)
-				node.(*sqlparser.Update).Where.Format(buf1 )
+				node.(*sqlparser.Update).Where.Format(buf1)
 				fmt.Println("where 条件 : ", buf1.String())
 				fmt.Println("action : ", "Update")
 
@@ -868,7 +868,7 @@ func TestCaseSensitivity(t *testing.T) {
 
 			case *sqlparser.Insert:
 				buf := sqlparser.NewTrackedBuffer(nil)
-				node.(*sqlparser.Insert).Table.Format(buf )
+				node.(*sqlparser.Insert).Table.Format(buf)
 				fmt.Println("原始的sql: ", tcase.input)
 				fmt.Println("table_name : ", buf.String())
 				buf1 := sqlparser.NewTrackedBuffer(nil)
@@ -882,7 +882,7 @@ func TestCaseSensitivity(t *testing.T) {
 
 			case *sqlparser.DDL:
 				buf := sqlparser.NewTrackedBuffer(nil)
-				node.(*sqlparser.DDL).Table.Format(buf )
+				node.(*sqlparser.DDL).Table.Format(buf)
 				fmt.Println("原始的sql: ", tcase.input)
 				fmt.Println("table_name : ", buf.String())
 				buf1 := sqlparser.NewTrackedBuffer(nil)

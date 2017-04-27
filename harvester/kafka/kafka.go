@@ -46,19 +46,24 @@ func (kh *kafkHarvester) Start() <-chan *meta.Message {
 	return c
 }
 
+func (kh *kafkHarvester) Stop() {
+	kh.consumer.Close()
+}
+
 func (kh *kafkHarvester) run(c chan *meta.Message) {
 	for {
 		select {
 		case msg, ok := <-kh.consumer.Messages():
 			if !ok {
 				log.Errorf("consumer Messages error")
-				continue
+				return
 			}
 			c <- meta.NewMessage(msg.Topic, string(msg.Value))
 			kh.consumer.MarkOffset(msg, "")
 		case err, ok := <-kh.consumer.Errors():
 			if ok {
 				log.Errorf("consumer Error: %v", err)
+				return
 			}
 		case ntf, ok := <-kh.consumer.Notifications():
 			if ok {

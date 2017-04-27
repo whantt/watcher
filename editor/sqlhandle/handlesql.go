@@ -46,27 +46,27 @@ func sql(msg *meta.Message) error {
 		switch node.(type) {
 		case *sqlparser.Select:
 			tableBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Select).From.Format(tableBuf )
+			node.(*sqlparser.Select).From.Format(tableBuf)
 			whereBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Select).Where.Format(whereBuf )
+			node.(*sqlparser.Select).Where.Format(whereBuf)
 			msg.DataMap["action"] = "Select"
 			msg.DataMap["table"] = tableBuf.String()
 			msg.DataMap["condition"] = whereBuf.String()
 			return false, nil
 		case *sqlparser.Update:
 			tableBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Update).Table.Format(tableBuf )
+			node.(*sqlparser.Update).Table.Format(tableBuf)
 			whereBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Update).Where.Format(whereBuf )
+			node.(*sqlparser.Update).Where.Format(whereBuf)
 			msg.DataMap["action"] = "Update"
 			msg.DataMap["table"] = tableBuf.String()
 			msg.DataMap["condition"] = whereBuf.String()
 			return false, nil
 		case *sqlparser.Delete:
 			tableBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Delete).Table.Format(tableBuf )
+			node.(*sqlparser.Delete).Table.Format(tableBuf)
 			whereBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Delete).Where.Format(whereBuf )
+			node.(*sqlparser.Delete).Where.Format(whereBuf)
 			msg.DataMap["action"] = "Delete"
 			msg.DataMap["table"] = tableBuf.String()
 			msg.DataMap["condition"] = whereBuf.String()
@@ -74,7 +74,7 @@ func sql(msg *meta.Message) error {
 
 		case *sqlparser.Insert:
 			tableBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Insert).Table.Format(tableBuf )
+			node.(*sqlparser.Insert).Table.Format(tableBuf)
 			whereBuf := sqlparser.NewTrackedBuffer(nil)
 
 			msg.DataMap["action"] = "Insert"
@@ -84,7 +84,7 @@ func sql(msg *meta.Message) error {
 
 		case *sqlparser.DDL:
 			tableBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.DDL).Table.Format(tableBuf )
+			node.(*sqlparser.DDL).Table.Format(tableBuf)
 
 			msg.DataMap["action"] = node.(*sqlparser.DDL).Action
 			msg.DataMap["table"] = tableBuf.String()

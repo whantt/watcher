@@ -71,8 +71,11 @@ func (r *regexpEditor) Handler(msg *meta.Message, m map[string]interface{}) erro
 
 	data := msg.Source
 	if rc.key != "" {
-		data = msg.DataMap[rc.key].(string)
+		if do, ok := msg.DataMap[rc.key]; ok {
+			data = do.(string)
+		}
 	}
+
 	log.Debugf("m:%v, data:%v", m, data)
 
 	for i, v := range rc.rx.FindStringSubmatch(data) {
