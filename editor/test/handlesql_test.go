@@ -9,6 +9,8 @@ import (
 	"github.com/dearcode/tracker/editor/sqlhandle"
 	"github.com/dearcode/tracker/meta"
 	"testing"
+	"strings"
+	"errors"
 )
 
 func TestHandleSQL(t *testing.T) {
@@ -26,4 +28,24 @@ func TestHandleSQL(t *testing.T) {
 
 	fmt.Println("condition", msg.DataMap["condition"])
 
+}
+func TestEmptyFile(t *testing.T){
+	parentPath ,err:= substr("dd/aa", 0, strings.LastIndex("dd/aa", "/"));if err!=nil{
+		fmt.Println("配置文件路径: %s路径错误或者文件不存在")
+
+	}
+	fmt.Println(parentPath)
+}
+func substr(s string, pos, length int) (string, error) {
+
+	if s == "" || length < 0 {
+		//log.Errorf("配置文件路径: %s路径错误或者文件不存在", s)
+		return s, errors.New("配置文件路径: " + s + "路径错误或者文件不存在")
+	}
+	runes := []rune(s)
+	l := pos + length
+	if l > len(runes) {
+		l = len(runes)
+	}
+	return string(runes[pos:l]), nil
 }
