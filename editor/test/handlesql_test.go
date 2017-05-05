@@ -5,12 +5,12 @@
 package test
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dearcode/tracker/editor/sqlhandle"
 	"github.com/dearcode/tracker/meta"
-	"testing"
 	"strings"
-	"errors"
+	"testing"
 )
 
 func TestHandleSQL(t *testing.T) {
@@ -29,8 +29,9 @@ func TestHandleSQL(t *testing.T) {
 	fmt.Println("condition", msg.DataMap["condition"])
 
 }
-func TestEmptyFile(t *testing.T){
-	parentPath ,err:= substr("dd/aa", 0, strings.LastIndex("dd/aa", "/"));if err!=nil{
+func TestEmptyFile(t *testing.T) {
+	parentPath, err := substr("dd/aa", 0, strings.LastIndex("dd/aa", "/"))
+	if err != nil {
 		fmt.Println("配置文件路径: %s路径错误或者文件不存在")
 
 	}

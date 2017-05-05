@@ -3,7 +3,6 @@ package processor
 import (
 	"errors"
 	"fmt"
-	"github.com/zssky/log"
 
 	"github.com/dearcode/tracker/config"
 	"github.com/dearcode/tracker/meta"
@@ -27,7 +26,6 @@ func Run(msg *meta.Message) (config.ActionConfig, error) {
 	for _, p := range c.Processor {
 		for i := range p.Topics {
 			if msg.Topic == p.Topics[i] {
-				log.Debugf("topic:%v rules:%v", msg.Topic, p.Rules)
 				for _, r := range p.Rules {
 					if len(r.Match) == 0 {
 						continue

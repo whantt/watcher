@@ -2,10 +2,13 @@ package kafka
 
 import (
 	"fmt"
+	l "log"
+	"os"
 
 	cluster "github.com/bsm/sarama-cluster"
 	"github.com/zssky/log"
 
+	"github.com/Shopify/sarama"
 	"github.com/dearcode/tracker/config"
 	"github.com/dearcode/tracker/harvester"
 	"github.com/dearcode/tracker/meta"
@@ -25,8 +28,12 @@ func init() {
 
 func (kh *kafkHarvester) Init(hc config.HarvesterConfig) error {
 	cc := cluster.NewConfig()
+	cc.ClientID = hc.ClientID
+	cc.Consumer.Offsets.Initial = sarama.OffsetOldest
 	cc.Consumer.Return.Errors = true
 	cc.Group.Return.Notifications = true
+
+	sarama.Logger = l.New(os.Stdout, "[sarama] ", l.LstdFlags)
 
 	consumer, err := cluster.NewConsumer(hc.Brokers, hc.Group, hc.Topics, cc)
 	if err != nil {
@@ -61,13 +68,11 @@ func (kh *kafkHarvester) run(c chan *meta.Message) {
 			c <- meta.NewMessage(msg.Topic, string(msg.Value))
 			kh.consumer.MarkOffset(msg, "")
 		case err, ok := <-kh.consumer.Errors():
-			if ok {
-				log.Errorf("consumer Error: %v", err)
-				return
-			}
+			log.Errorf("consumer Error:%v, ok:%v", err, ok)
+			return
 		case ntf, ok := <-kh.consumer.Notifications():
 			if ok {
-				log.Infof("Rebalanced: %v", ntf)
+				log.Infof("Rebalanced: %#v", ntf)
 			}
 		}
 	}

@@ -41,6 +41,7 @@ func Run(msg *meta.Message, ac config.ActionConfig) error {
 		if m, ok := models["mail"]; ok {
 			if err := m.Handler(msg, ac); err != nil {
 				msg.Trace(meta.StageAlertor, "mail", err.Error())
+				return err
 			}
 		}
 	}
@@ -49,6 +50,7 @@ func Run(msg *meta.Message, ac config.ActionConfig) error {
 		if m, ok := models["message"]; ok {
 			if err := m.Handler(msg, ac); err != nil {
 				msg.Trace(meta.StageAlertor, "message", err.Error())
+				return err
 			}
 		}
 	}

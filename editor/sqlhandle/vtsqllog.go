@@ -1,4 +1,5 @@
 package sqlhandle
+
 // 日志的信息的输出级别
 const (
 	INFO    = iota // 0

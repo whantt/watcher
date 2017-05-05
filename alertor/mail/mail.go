@@ -3,6 +3,7 @@ package mail
 import (
 	"bytes"
 	"crypto/tls"
+	"fmt"
 	"text/template"
 
 	"github.com/zssky/log"
@@ -51,23 +52,26 @@ func (ma *mailAlertor) Handler(msg *meta.Message, ac config.ActionConfig) error 
 
 	body := buf.String()
 
-	return ma.send(ac.MailTo, title, body)
+	return ma.send(msg, ac.MailTo, title, body)
 }
 
-func (ma *mailAlertor) send(to []string, title, body string) error {
+func (ma *mailAlertor) send(msg *meta.Message, to []string, title, body string) error {
 	ec, err := config.GetConfig()
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("config:%v", ec.Alertor.Mail)
+	msg.Trace(meta.StageAlertor, "mail", fmt.Sprintf("begin Dial:%v:%v", ec.Alertor.Mail.Host, ec.Alertor.Mail.Port))
 	d := gomail.NewDialer(ec.Alertor.Mail.Host, ec.Alertor.Mail.Port, ec.Alertor.Mail.User, ec.Alertor.Mail.Password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
 	sc, err := d.Dial()
 	if err != nil {
+		msg.Trace(meta.StageAlertor, "mail", fmt.Sprintf("end Dial:%v:%v error:%v", ec.Alertor.Mail.Host, ec.Alertor.Mail.Port, err))
 		return err
 	}
 	defer sc.Close()
+	msg.Trace(meta.StageAlertor, "mail", fmt.Sprintf("end Dial:%v:%v success", ec.Alertor.Mail.Host, ec.Alertor.Mail.Port))
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", ec.Alertor.Mail.From)
@@ -75,8 +79,11 @@ func (ma *mailAlertor) send(to []string, title, body string) error {
 	m.SetHeader("Subject", title)
 	m.SetBody("text/html", body)
 
+	msg.Trace(meta.StageAlertor, "mail", fmt.Sprintf("begin send from:%v to:%v", ec.Alertor.Mail.From, to))
 	if err = sc.Send(ec.Alertor.Mail.From, to, m); err != nil {
+		msg.Trace(meta.StageAlertor, "mail", fmt.Sprintf("end send from:%v to:%v, error:%v", ec.Alertor.Mail.From, to, err))
 		return err
 	}
+	msg.Trace(meta.StageAlertor, "mail", fmt.Sprintf("end send from:%v to:%v, success", ec.Alertor.Mail.From, to))
 	return nil
 }

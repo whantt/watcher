@@ -65,8 +65,8 @@ func (m *Message) Runable() bool {
 	return m.state == StateRun
 }
 
-func (m *Message) Trace(l ProcessStage, model, result string) {
-	i := &m.trace[l]
+func (m *Message) Trace(stage ProcessStage, model, result string) {
+	i := &m.trace[stage]
 	i.Status = append(i.Status, traceStatus{Model: model, Result: result, Time: time.Now()})
 }
 

@@ -40,6 +40,10 @@ func (ma *messageAlertor) Handler(msg *meta.Message, ac config.ActionConfig) err
 }
 
 func (ma *messageAlertor) send(to []string, body string) error {
+	if len(to) == 0 {
+		log.Infof("message to is null")
+		return nil
+	}
 	ec, err := config.GetConfig()
 	if err != nil {
 		return err

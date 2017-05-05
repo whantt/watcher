@@ -21,9 +21,10 @@ var (
 )
 
 type HarvesterConfig struct {
-	Brokers []string `json:"brokers"`
-	Topics  []string `json:"topics"`
-	Group   string   `json:"group"`
+	Brokers  []string `json:"brokers"`
+	Topics   []string `json:"topics"`
+	Group    string   `json:"group"`
+	ClientID string   `json:"client_id"`
 }
 
 type EditorConfig struct {
