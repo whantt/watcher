@@ -7,19 +7,19 @@ import (
 
 	"github.com/zssky/log"
 
-	"github.com/dearcode/tracker/alertor"
-	_ "github.com/dearcode/tracker/alertor/mail"
-	_ "github.com/dearcode/tracker/alertor/message"
-	"github.com/dearcode/tracker/config"
-	"github.com/dearcode/tracker/editor"
-	_ "github.com/dearcode/tracker/editor/json"
-	_ "github.com/dearcode/tracker/editor/regexp"
-	_ "github.com/dearcode/tracker/editor/remove"
-	_ "github.com/dearcode/tracker/editor/sqlhandle"
-	"github.com/dearcode/tracker/harvester"
-	_ "github.com/dearcode/tracker/harvester/kafka"
-	"github.com/dearcode/tracker/meta"
-	"github.com/dearcode/tracker/processor"
+	"github.com/dearcode/watcher/alertor"
+	_ "github.com/dearcode/watcher/alertor/mail"
+	_ "github.com/dearcode/watcher/alertor/message"
+	"github.com/dearcode/watcher/config"
+	"github.com/dearcode/watcher/editor"
+	_ "github.com/dearcode/watcher/editor/json"
+	_ "github.com/dearcode/watcher/editor/regexp"
+	_ "github.com/dearcode/watcher/editor/remove"
+	_ "github.com/dearcode/watcher/editor/sqlhandle"
+	"github.com/dearcode/watcher/harvester"
+	_ "github.com/dearcode/watcher/harvester/kafka"
+	"github.com/dearcode/watcher/meta"
+	"github.com/dearcode/watcher/processor"
 )
 
 func main() {

@@ -7,8 +7,8 @@ package test
 import (
 	"errors"
 	"fmt"
-	"github.com/dearcode/tracker/editor/sqlhandle"
-	"github.com/dearcode/tracker/meta"
+	"github.com/dearcode/watcher/editor/sqlhandle"
+	"github.com/dearcode/watcher/meta"
 	"strings"
 	"testing"
 )

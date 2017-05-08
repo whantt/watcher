@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	cf  = flag.String("c", "./config/tracker.json", "config path")
+	cf  = flag.String("c", "./config/watcher.json", "config path")
 	cfg *Config
 	cs  os.FileInfo
 
@@ -77,7 +77,7 @@ type AlertorMessageConfig struct {
 
 type AlertorConfig struct {
 	Mail    AlertorMailConfig    `json:"mail"`
-	Message AlertorMessageConfig `json::"message"`
+	Message AlertorMessageConfig `json:"message"`
 }
 
 type Config struct {

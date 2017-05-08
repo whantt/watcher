@@ -5,8 +5,8 @@ import (
 
 	"github.com/zssky/log"
 
-	"github.com/dearcode/tracker/config"
-	"github.com/dearcode/tracker/meta"
+	"github.com/dearcode/watcher/config"
+	"github.com/dearcode/watcher/meta"
 )
 
 var (

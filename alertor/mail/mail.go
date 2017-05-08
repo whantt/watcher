@@ -9,9 +9,9 @@ import (
 	"github.com/zssky/log"
 	"gopkg.in/gomail.v2"
 
-	"github.com/dearcode/tracker/alertor"
-	"github.com/dearcode/tracker/config"
-	"github.com/dearcode/tracker/meta"
+	"github.com/dearcode/watcher/alertor"
+	"github.com/dearcode/watcher/config"
+	"github.com/dearcode/watcher/meta"
 )
 
 var (

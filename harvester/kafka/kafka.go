@@ -9,9 +9,9 @@ import (
 	"github.com/zssky/log"
 
 	"github.com/Shopify/sarama"
-	"github.com/dearcode/tracker/config"
-	"github.com/dearcode/tracker/harvester"
-	"github.com/dearcode/tracker/meta"
+	"github.com/dearcode/watcher/config"
+	"github.com/dearcode/watcher/harvester"
+	"github.com/dearcode/watcher/meta"
 )
 
 var (

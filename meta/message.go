@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dearcode/tracker/config"
+	"github.com/dearcode/watcher/config"
 )
 
 type ProcessStage int

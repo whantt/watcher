@@ -3,14 +3,15 @@ package alertor
 import (
 	"github.com/zssky/log"
 
-	"github.com/dearcode/tracker/config"
-	"github.com/dearcode/tracker/meta"
+	"github.com/dearcode/watcher/config"
+	"github.com/dearcode/watcher/meta"
 )
 
 var (
 	models = map[string]Alertor{}
 )
 
+//Alertor 报警接口.
 type Alertor interface {
 	Handler(msg *meta.Message, ac config.ActionConfig) error
 }
@@ -35,6 +36,7 @@ func Register(name string, a Alertor) {
 	log.Debugf("new alertor mode:%v", name)
 }
 
+//Run 报警模块入口.
 func Run(msg *meta.Message, ac config.ActionConfig) error {
 	log.Debugf("msg:%#v, action:%v", msg.DataMap, ac)
 	if ac.Mail {
