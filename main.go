@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/juju/errors"
 	"github.com/zssky/log"
 
 	"github.com/dearcode/watcher/alertor"
@@ -24,27 +25,27 @@ import (
 
 func main() {
 	if err := config.Init(); err != nil {
-		panic(err.Error())
+		panic(errors.ErrorStack(err))
 	}
 
 	if err := editor.Init(); err != nil {
-		panic(err.Error())
+		panic(errors.ErrorStack(err))
 	}
 
 	if err := harvester.Init(); err != nil {
-		panic(err.Error())
+		panic(errors.ErrorStack(err))
 	}
 
 	if err := processor.Init(); err != nil {
-		panic(err.Error())
+		panic(errors.ErrorStack(err))
 	}
 
 	if err := alertor.Init(); err != nil {
-		panic(err.Error())
+		panic(errors.ErrorStack(err))
 	}
 
 	reader := harvester.Reader()
-	//正式应该多线程
+
 	for i := 0; i < 10; i++ {
 		go worker(reader)
 	}
@@ -59,17 +60,9 @@ func main() {
 }
 
 func worker(reader <-chan *meta.Message) {
-	/*
-		m := meta.NewMessage("sql", `I0426 11:21:40.488165      39 sql_log.go:54] json_data:{"name":"mysql_rw","addr":"192.168.81.31:48790","sql":"update fms_freight set id=1 where id=2","sendQueryDate":"17-4-26 11:21:40.482482612","recvResultDate":"17-4-26 11:21:40.488147166","sqlExecDuration":5664554,"datanodes":[{"name":"-50","tabletType":1,"idx":1,"sendDate":"17-4-26 11:21:40.482482612","recvDate":"17-4-26 11:21:40.488141224","shardExecuteTime":5658612}]}`)
-	*/
 	for msg := range reader {
 		run(msg)
-		//	log.Infof("msg trace:%v", msg.TraceStack())
 	}
-	/*
-		run(m)
-		log.Debugf("trace:%v", m.TraceStack())
-	*/
 }
 
 func run(msg *meta.Message) {

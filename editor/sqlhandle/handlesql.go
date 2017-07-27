@@ -103,7 +103,7 @@ func analysis(msg *meta.Message) error {
 			return false, nil
 		case *sqlparser.Update:
 			tableBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Update).Table.Format(tableBuf)
+			node.(*sqlparser.Update).TableExprs.Format(tableBuf)
 			whereBuf := sqlparser.NewTrackedBuffer(nil)
 			node.(*sqlparser.Update).Where.Format(whereBuf)
 			msg.DataMap["action"] = "Update"
@@ -112,7 +112,7 @@ func analysis(msg *meta.Message) error {
 			return false, nil
 		case *sqlparser.Delete:
 			tableBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Delete).Table.Format(tableBuf)
+			node.(*sqlparser.Delete).TableExprs.Format(tableBuf)
 			whereBuf := sqlparser.NewTrackedBuffer(nil)
 			node.(*sqlparser.Delete).Where.Format(whereBuf)
 			msg.DataMap["action"] = "Delete"
@@ -121,12 +121,10 @@ func analysis(msg *meta.Message) error {
 			return false, nil
 
 		case *sqlparser.Insert:
-			tableBuf := sqlparser.NewTrackedBuffer(nil)
-			node.(*sqlparser.Insert).Table.Format(tableBuf)
 			whereBuf := sqlparser.NewTrackedBuffer(nil)
 
 			msg.DataMap["action"] = "Insert"
-			msg.DataMap["table"] = tableBuf.String()
+			msg.DataMap["table"] = node.(*sqlparser.Insert).Table.Name.String()
 			msg.DataMap["condition"] = whereBuf.String()
 			return false, nil
 
@@ -146,11 +144,6 @@ func analysis(msg *meta.Message) error {
 			msg.DataMap["condition"] = ""
 			return false, nil
 
-		case *sqlparser.Other:
-			msg.DataMap["action"] = "Other"
-			msg.DataMap["table"] = "Other"
-			msg.DataMap["condition"] = "Other"
-			return false, nil
 		default:
 			return true, nil
 

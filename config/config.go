@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -8,16 +9,27 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"time"
+
+	"github.com/dearcode/configurator/models"
+	cu "github.com/dearcode/configurator/util"
+	"github.com/dearcode/crab/http"
+	"github.com/dearcode/crab/util"
+	"github.com/zssky/log"
 )
 
 var (
-	cf  = flag.String("c", "./config/watcher.json", "config path")
+	cf  = flag.String("cfg", "./config/watcher.json", "config path")
 	cfg *Config
 	cs  os.FileInfo
 
 	// ErrConfigNeedInit config need init first.
 	ErrConfigNeedInit = errors.New("config need init first")
+)
+
+const (
+	reloadInterval = time.Second * 5
 )
 
 type HarvesterConfig struct {
@@ -41,13 +53,9 @@ type MatchConfig struct {
 
 //ActionConfig 配置成功后要执行的动作.
 type ActionConfig struct {
-	Mail        bool     `json:"mail"`
-	MailTo      []string `json:"mail_to"`
-	MailTitle   string   `json:"mail_title"`
-	MailBody    string   `json:"mail_body"`
-	Message     bool     `json:"message"`
-	MessageTo   []string `json:"message_to"`
-	MessageBody string   `json:"message_body"`
+	MailTo    []string `json:"mail_to"`
+	MessageTo []string `json:"message_to"`
+	Message   string   `json:"message"`
 }
 
 //RulesConfig 一个过滤事件.
@@ -75,12 +83,23 @@ type AlertorMessageConfig struct {
 	Extension string `json:"extension"`
 }
 
+type AlertorWebMailConfig struct {
+	URL   string `json:"url"`
+	Token string `json:"token"`
+}
+
 type AlertorConfig struct {
 	Mail    AlertorMailConfig    `json:"mail"`
 	Message AlertorMessageConfig `json:"message"`
+	WebMail AlertorWebMailConfig `json:"webmail"`
+}
+
+type ManagerConfig struct {
+	Host string `json:"host"`
 }
 
 type Config struct {
+	Manager   ManagerConfig     `json:"manager"`
 	Harvester HarvesterConfig   `json:"harvester"`
 	Editor    []EditorConfig    `json:"editor"`
 	Processor []ProcessorConfig `json:"processor"`
@@ -94,12 +113,105 @@ func Init() error {
 	}
 
 	go reloadConfig()
+	go reloadProcessor()
 
 	return nil
 }
 
+func topics(name, modules string) []string {
+	var ts []string
+	for _, m := range strings.Split(modules, ",") {
+		t := cu.ModuleKey(name, m)
+		ts = append(ts, t)
+	}
+
+	return ts
+}
+
+func match(cond string) []MatchConfig {
+	ms := []MatchConfig{}
+	for _, c := range util.TrimSplit(cond, ",") {
+		kvs := util.TrimSplit(c, " ")
+		if len(kvs) < 2 {
+			log.Errorf("invalid line:%v", c)
+			continue
+		}
+
+		m := MatchConfig{}
+
+		//目前只支持常见少量操作
+		switch kvs[1] {
+		case "==":
+			m.Method = "equal"
+		case "=":
+			m.Method = "contains"
+		case ">":
+			m.Method = "larger"
+		case "<":
+			m.Method = "lesser"
+		}
+		m.Key = kvs[0]
+		m.Value = kvs[2]
+
+		ms = append(ms, m)
+	}
+	return ms
+}
+
+var (
+	oldBuf []byte
+)
+
+func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
+	buf, _, err := http.NewClient(time.Second*5).Get(url, nil, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if bytes.Equal(oldBuf, buf) {
+		return nil, nil, nil
+	}
+
+	acs := []models.AlertConfig{}
+	if err = json.Unmarshal(buf, &acs); err != nil {
+		return nil, nil, err
+	}
+
+	tpss := make(map[string]interface{})
+	pcs := []ProcessorConfig{}
+	for _, ac := range acs {
+		rs := RulesConfig{
+			Action: ActionConfig{
+				MailTo:    util.TrimSplit(ac.Email, ","),
+				MessageTo: util.TrimSplit(ac.Mobile, ","),
+				Message:   ac.Message,
+			},
+			Match: match(ac.Condition),
+		}
+
+		tps := topics(ac.Name, ac.Modules)
+		pc := ProcessorConfig{
+			Topics: tps,
+			Rules:  []RulesConfig{rs},
+		}
+		pcs = append(pcs, pc)
+		for _, tp := range tps {
+			tpss[tp] = nil
+		}
+	}
+
+	ntpss := []string{}
+	for k, _ := range tpss {
+		ntpss = append(ntpss, k)
+	}
+
+	oldBuf = buf
+
+	return pcs, ntpss, nil
+}
+
 func reloadConfig() {
-	t := time.NewTicker(time.Second)
+	t := time.NewTicker(reloadInterval)
 
 	for range t.C {
 		s, err := os.Stat(*cf)
@@ -113,9 +225,26 @@ func reloadConfig() {
 			loadConfig()
 			cs = s
 		}
-
 	}
+}
 
+func reloadProcessor() {
+	t := time.NewTicker(reloadInterval)
+	url := fmt.Sprintf("http://%v/api/alerts/", cfg.Manager.Host)
+
+	for range t.C {
+		p, tps, err := loadProcessor(url)
+		if err != nil {
+			log.Errorf("loadProcessor error:%v", err)
+			continue
+		}
+		if p == nil && tps == nil {
+			continue
+		}
+		cfg.Processor = p
+		cfg.Harvester.Topics = tps
+		log.Debugf("new config:%+v", cfg)
+	}
 }
 
 func loadConfig() error {
@@ -145,4 +274,12 @@ func GetConfig() (*Config, error) {
 		return nil, ErrConfigNeedInit
 	}
 	return cfg, nil
+}
+
+func (ac ActionConfig) EnableMail() bool {
+	return len(ac.MailTo) > 0 && ac.MailTo[0] != ""
+}
+
+func (ac ActionConfig) EnableMessage() bool {
+	return len(ac.MessageTo) > 0 && ac.MessageTo[0] != ""
 }

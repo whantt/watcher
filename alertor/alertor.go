@@ -39,7 +39,7 @@ func Register(name string, a Alertor) {
 //Run 报警模块入口.
 func Run(msg *meta.Message, ac config.ActionConfig) error {
 	log.Debugf("msg:%#v, action:%v", msg.DataMap, ac)
-	if ac.Mail {
+	if ac.EnableMail() {
 		if m, ok := models["mail"]; ok {
 			if err := m.Handler(msg, ac); err != nil {
 				msg.Trace(meta.StageAlertor, "mail", err.Error())
@@ -48,7 +48,16 @@ func Run(msg *meta.Message, ac config.ActionConfig) error {
 		}
 	}
 
-	if ac.Message {
+	if ac.EnableMail() {
+		if m, ok := models["webmail"]; ok {
+			if err := m.Handler(msg, ac); err != nil {
+				msg.Trace(meta.StageAlertor, "mail", err.Error())
+				return err
+			}
+		}
+	}
+
+	if ac.EnableMessage() {
 		if m, ok := models["message"]; ok {
 			if err := m.Handler(msg, ac); err != nil {
 				msg.Trace(meta.StageAlertor, "message", err.Error())

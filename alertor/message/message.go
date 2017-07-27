@@ -26,13 +26,13 @@ func init() {
 
 func (ma *messageAlertor) Handler(msg *meta.Message, ac config.ActionConfig) error {
 	buf := bytes.NewBufferString("")
-	t, err := template.New("message").Parse(ac.MessageBody)
+	t, err := template.New("message").Parse(ac.Message)
 	if err != nil {
-		log.Errorf("parse message body error:%v, src:%v", err, ac.MessageBody)
+		log.Errorf("parse message body error:%v, src:%v", err, ac.Message)
 		return err
 	}
 	if err = t.Execute(buf, msg.DataMap); err != nil {
-		log.Errorf("Execute message body error:%v, src:%v", err, ac.MessageBody)
+		log.Errorf("Execute message body error:%v, src:%v", err, ac.Message)
 		return err
 	}
 

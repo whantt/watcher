@@ -1,8 +1,7 @@
 package harvester
 
 import (
-	"errors"
-
+	"github.com/juju/errors"
 	"github.com/zssky/log"
 
 	"github.com/dearcode/watcher/config"
@@ -28,12 +27,12 @@ func Init() error {
 
 	ec, err := config.GetConfig()
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	kh, ok := models["kafka"]
 	if !ok {
-		return ErrModelNotFound
+		return errors.Trace(ErrModelNotFound)
 	}
 
 	return kh.Init(ec.Harvester)

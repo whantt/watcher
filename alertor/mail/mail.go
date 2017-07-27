@@ -3,9 +3,15 @@ package mail
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"strings"
 	"text/template"
+	"time"
 
+	"github.com/dearcode/crab/http"
 	"github.com/zssky/log"
 	"gopkg.in/gomail.v2"
 
@@ -15,25 +21,23 @@ import (
 )
 
 var (
-	ma = mailAlertor{}
+	ma      = mailAlertor{}
+	webMail = flag.Bool("webmail", false, "use web mail api")
 )
 
 type mailAlertor struct {
 }
 
 func init() {
+	flag.Parse()
 	alertor.Register("mail", &ma)
 }
 
 func (ma *mailAlertor) Handler(msg *meta.Message, ac config.ActionConfig) error {
 	buf := bytes.NewBufferString("")
-	t, err := template.New("mail").Parse(ac.MailTitle)
-	if err != nil {
-		log.Errorf("parse mail title error:%v, src:%v", err, ac.MailTitle)
-		return err
-	}
-	if err = t.Execute(buf, msg.DataMap); err != nil {
-		log.Errorf("Execute mail title error:%v, src:%v", err, ac.MailTitle)
+	t, _ := template.New("mail").Parse("日志平台报警")
+	if err := t.Execute(buf, msg.DataMap); err != nil {
+		log.Errorf("Execute mail title error:%v, src:%v", err, msg.DataMap)
 		return err
 	}
 
@@ -41,21 +45,27 @@ func (ma *mailAlertor) Handler(msg *meta.Message, ac config.ActionConfig) error 
 
 	buf.Truncate(0)
 
-	if t, err = template.New("mail").Parse(ac.MailBody); err != nil {
-		log.Errorf("parse mail body error:%v, src:%v", err, ac.MailTitle)
+	html := strings.Replace(ac.Message, "\n", "<br />", -1)
+
+	t, err := template.New("mail").Parse(html)
+	if err != nil {
+		log.Errorf("parse mail body error:%v, src:%v", err, msg.DataMap)
 		return err
 	}
 	if err = t.Execute(buf, msg.DataMap); err != nil {
-		log.Errorf("Execute mail body error:%v, src:%v", err, ac.MailTitle)
+		log.Errorf("Execute mail body error:%v, src:%v", err, msg.DataMap)
 		return err
 	}
 
 	body := buf.String()
+	if *webMail {
+		return sendWeb(msg, ac.MailTo, title, body)
+	}
+	return sendMail(msg, ac.MailTo, title, body)
 
-	return ma.send(msg, ac.MailTo, title, body)
 }
 
-func (ma *mailAlertor) send(msg *meta.Message, to []string, title, body string) error {
+func sendMail(msg *meta.Message, to []string, title, body string) error {
 	ec, err := config.GetConfig()
 	if err != nil {
 		return err
@@ -85,5 +95,36 @@ func (ma *mailAlertor) send(msg *meta.Message, to []string, title, body string) 
 		return err
 	}
 	msg.Trace(meta.StageAlertor, "mail", fmt.Sprintf("end send from:%v to:%v, success", ec.Alertor.Mail.From, to))
+	return nil
+}
+
+func sendWeb(_ *meta.Message, to []string, title, body string) error {
+	ec, err := config.GetConfig()
+	if err != nil {
+		return err
+	}
+
+	wa := struct {
+		OrderID int    `json:"OrderId"`
+		To      string `json:"toAddress"`
+		CC      string `json:"ccAddress"`
+		Subject string `json:"subject"`
+		Content string `json:"content"`
+	}{
+		To:      strings.Join(to, ";"),
+		Subject: title,
+		Content: body,
+		OrderID: 1,
+	}
+
+	buf, _ := json.Marshal(wa)
+
+	buf, _, err = http.NewClient(time.Minute).POST(ec.Alertor.WebMail.URL, map[string]string{"Token": ec.Alertor.WebMail.Token}, ioutil.NopCloser(bytes.NewBuffer(buf)))
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("send mail:%v, response:%v", wa, string(buf))
+
 	return nil
 }
