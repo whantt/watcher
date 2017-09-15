@@ -6,12 +6,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"text/template"
 	"time"
 
-	"github.com/dearcode/crab/http"
+	"github.com/dearcode/crab/http/client"
 	"github.com/zssky/log"
 	"gopkg.in/gomail.v2"
 
@@ -29,7 +28,6 @@ type mailAlertor struct {
 }
 
 func init() {
-	flag.Parse()
 	alertor.Register("mail", &ma)
 }
 
@@ -119,7 +117,7 @@ func sendWeb(_ *meta.Message, to []string, title, body string) error {
 
 	buf, _ := json.Marshal(wa)
 
-	buf, _, err = http.NewClient(time.Minute).POST(ec.Alertor.WebMail.URL, map[string]string{"Token": ec.Alertor.WebMail.Token}, ioutil.NopCloser(bytes.NewBuffer(buf)))
+	buf, _, err = client.NewClient(time.Minute).POST(ec.Alertor.WebMail.URL, map[string]string{"Token": ec.Alertor.WebMail.Token}, bytes.NewBuffer(buf))
 	if err != nil {
 		return err
 	}

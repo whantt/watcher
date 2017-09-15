@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,7 +24,18 @@ import (
 	"github.com/dearcode/watcher/processor"
 )
 
+var (
+	debug = flag.Bool("debug", false, "output all logs.")
+)
+
 func main() {
+	flag.Parse()
+	log.SetLevel(log.LOG_LEVEL_INFO)
+
+	if *debug {
+		log.SetLevel(log.LOG_LEVEL_ALL)
+	}
+
 	if err := config.Init(); err != nil {
 		panic(errors.ErrorStack(err))
 	}

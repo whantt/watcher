@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/dearcode/configurator/models"
-	cu "github.com/dearcode/configurator/util"
-	"github.com/dearcode/crab/http"
+	"github.com/dearcode/configurator/util/keys"
+	"github.com/dearcode/crab/http/client"
 	"github.com/dearcode/crab/util"
 	"github.com/zssky/log"
 )
@@ -121,7 +121,7 @@ func Init() error {
 func topics(name, modules string) []string {
 	var ts []string
 	for _, m := range strings.Split(modules, ",") {
-		t := cu.ModuleKey(name, m)
+		t := keys.ModuleKey(name, m)
 		ts = append(ts, t)
 	}
 
@@ -163,7 +163,7 @@ var (
 )
 
 func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
-	buf, _, err := http.NewClient(time.Second*5).Get(url, nil, nil)
+	buf, _, err := client.NewClient(time.Second*5).Get(url, nil, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -201,7 +201,7 @@ func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
 	}
 
 	ntpss := []string{}
-	for k, _ := range tpss {
+	for k := range tpss {
 		ntpss = append(ntpss, k)
 	}
 
