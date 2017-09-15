@@ -12,8 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dearcode/configurator/models"
-	"github.com/dearcode/configurator/util/keys"
 	"github.com/dearcode/crab/http/client"
 	"github.com/dearcode/crab/util"
 	"github.com/zssky/log"
@@ -118,10 +116,14 @@ func Init() error {
 	return nil
 }
 
+func ModuleKey(app, module string) string {
+	return fmt.Sprintf("a-%v-m-%v", app, module)
+}
+
 func topics(name, modules string) []string {
 	var ts []string
 	for _, m := range strings.Split(modules, ",") {
-		t := keys.ModuleKey(name, m)
+		t := ModuleKey(name, m)
 		ts = append(ts, t)
 	}
 
@@ -162,6 +164,16 @@ var (
 	oldBuf []byte
 )
 
+type AlertConfig struct {
+	Name      string
+	APP       string
+	Modules   string
+	Condition string
+	Email     string
+	Mobile    string
+	Message   string
+}
+
 func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
 	buf, _, err := client.NewClient(time.Second*5).Get(url, nil, nil)
 	if err != nil {
@@ -172,7 +184,7 @@ func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
 		return nil, nil, nil
 	}
 
-	acs := []models.AlertConfig{}
+	acs := []AlertConfig{}
 	if err = json.Unmarshal(buf, &acs); err != nil {
 		return nil, nil, err
 	}

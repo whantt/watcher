@@ -29,10 +29,7 @@ vet:
 	go tool vet --shadow $(FILES) 2>&1
 
 
-watcher:dep
-ifneq ($(VENDOR), $(wildcard $(VENDOR)))
-	dep ensure
-endif
+watcher:
 	go build -o bin/$@ -ldflags '$(LDFLAGS)' main.go 
 
 test:

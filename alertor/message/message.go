@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"text/template"
 
-	"github.com/zssky/Mole/models/sms"
 	"github.com/zssky/log"
 	"github.com/zssky/tc"
 
@@ -49,20 +48,20 @@ func (ma *messageAlertor) send(to []string, body string) error {
 		return err
 	}
 
-	is := &sms.SMS{
-		SMSBaseInfo: sms.SMSBaseInfo{
+	is := &SMS{
+		SMSBaseInfo: SMSBaseInfo{
 			SenderNum: ec.Alertor.Message.Account,
 			Extension: ec.Alertor.Message.Extension,
 		},
-		MobileNums: make([]sms.MobileInfo, len(to)),
+		MobileNums: make([]MobileInfo, len(to)),
 		MsgContent: body,
 	}
 
 	for i, m := range to {
-		is.MobileNums[i] = sms.MobileInfo{MobileNum: tc.TrimSpace(m)}
+		is.MobileNums[i] = MobileInfo{MobileNum: tc.TrimSpace(m)}
 	}
 
-	if err = sms.SendSMS(ec.Alertor.Message.URL, is); err != nil {
+	if err = SendSMS(ec.Alertor.Message.URL, is); err != nil {
 		log.Errorf("send sms error:%v", err)
 		return err
 	}
