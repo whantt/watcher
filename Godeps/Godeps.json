@@ -2,6 +2,9 @@
 	"ImportPath": "github.com/dearcode/watcher",
 	"GoVersion": "go1.9",
 	"GodepVersion": "v79",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Shopify/sarama",
@@ -20,15 +23,18 @@
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/cache",
-			"Rev": "40102f03476d0d6329066510f0c562c56476d1d9"
+			"Comment": "v1.0.0-6-g43df0be",
+			"Rev": "43df0be6cd8c8aa9ea49ae3b92d591d2f4e294b6"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/http/client",
-			"Rev": "40102f03476d0d6329066510f0c562c56476d1d9"
+			"Comment": "v1.0.0-6-g43df0be",
+			"Rev": "43df0be6cd8c8aa9ea49ae3b92d591d2f4e294b6"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/util",
-			"Rev": "40102f03476d0d6329066510f0c562c56476d1d9"
+			"Comment": "v1.0.0-6-g43df0be",
+			"Rev": "43df0be6cd8c8aa9ea49ae3b92d591d2f4e294b6"
 		},
 		{
 			"ImportPath": "github.com/eapache/go-resiliency/breaker",

@@ -175,7 +175,7 @@ type AlertConfig struct {
 }
 
 func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
-	buf, _, err := client.NewClient(time.Second*5).Get(url, nil, nil)
+	buf, _, err := client.New(time.Second*5).Get(url, nil, nil)
 	if err != nil {
 		return nil, nil, err
 	}

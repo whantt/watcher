@@ -7,7 +7,6 @@
 _obj
 _test
 .idea
-vendor
 bin
 
 # Architecture specific extensions/prefixes

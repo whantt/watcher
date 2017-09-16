@@ -117,7 +117,7 @@ func sendWeb(_ *meta.Message, to []string, title, body string) error {
 
 	buf, _ := json.Marshal(wa)
 
-	buf, _, err = client.NewClient(time.Minute).POST(ec.Alertor.WebMail.URL, map[string]string{"Token": ec.Alertor.WebMail.Token}, bytes.NewBuffer(buf))
+	buf, _, err = client.New(time.Minute).POST(ec.Alertor.WebMail.URL, map[string]string{"Token": ec.Alertor.WebMail.Token}, bytes.NewBuffer(buf))
 	if err != nil {
 		return err
 	}
