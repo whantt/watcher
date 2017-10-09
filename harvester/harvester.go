@@ -14,13 +14,12 @@ var (
 )
 
 type Harvester interface {
-	Init(c config.HarvesterConfig) error
-	Start() <-chan *meta.Message
+	Init(c config.HarvesterConfig, msgChan chan<- *meta.Message) error
 	Stop()
 }
 
 //Init init harvester.
-func Init() error {
+func Init(msgChan chan<- *meta.Message) error {
 	for k := range models {
 		log.Debugf("harvester model:%v", k)
 	}
@@ -35,7 +34,7 @@ func Init() error {
 		return errors.Trace(ErrModelNotFound)
 	}
 
-	return kh.Init(ec.Harvester)
+	return kh.Init(ec.Harvester, msgChan)
 }
 
 //Register 添加模块
@@ -47,12 +46,6 @@ func Register(name string, m Harvester) {
 
 	models[name] = m
 	log.Debugf("new mode:%v", name)
-}
-
-func Reader() <-chan *meta.Message {
-	kh, _ := models["kafka"]
-
-	return kh.Start()
 }
 
 func Stop() {

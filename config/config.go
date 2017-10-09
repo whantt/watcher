@@ -3,7 +3,6 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/dearcode/crab/http/client"
 	"github.com/dearcode/crab/util"
+	"github.com/juju/errors"
 	"github.com/zssky/log"
 )
 
@@ -30,6 +30,7 @@ const (
 	reloadInterval = time.Second * 5
 )
 
+// HarvesterConfig 日志收集.
 type HarvesterConfig struct {
 	Brokers  []string `json:"brokers"`
 	Topics   []string `json:"topics"`
@@ -37,12 +38,14 @@ type HarvesterConfig struct {
 	ClientID string   `json:"client_id"`
 }
 
+//EditorConfig 对日志内容进行修改.
 type EditorConfig struct {
 	Topics []string               `json:"topics"`
 	Model  string                 `json:"model"`
 	Data   map[string]interface{} `json:"data"`
 }
 
+//MatchConfig 检测日志内容与配置报警是否匹配.
 type MatchConfig struct {
 	Key    string `json:"key"`
 	Value  string `json:"value"`
@@ -62,11 +65,13 @@ type RulesConfig struct {
 	Action ActionConfig  `json:"action"`
 }
 
+//ProcessorConfig 根据规则遍历日志.
 type ProcessorConfig struct {
 	Topics []string      `json:"topics"`
 	Rules  []RulesConfig `json:"rules"`
 }
 
+//AlertorMailConfig 报警邮件相关配置.
 type AlertorMailConfig struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
@@ -75,27 +80,32 @@ type AlertorMailConfig struct {
 	Password string `json:"password"`
 }
 
+//AlertorMessageConfig 报警短信配置.
 type AlertorMessageConfig struct {
 	URL       string `json:"url"`
 	Account   string `json:"account"`
 	Extension string `json:"extension"`
 }
 
+//AlertorWebMailConfig 报警邮件(webmail)配置.
 type AlertorWebMailConfig struct {
 	URL   string `json:"url"`
 	Token string `json:"token"`
 }
 
+//AlertorConfig 日志报警相关配置.
 type AlertorConfig struct {
 	Mail    AlertorMailConfig    `json:"mail"`
 	Message AlertorMessageConfig `json:"message"`
 	WebMail AlertorWebMailConfig `json:"webmail"`
 }
 
+//ManagerConfig 管理节点配置.
 type ManagerConfig struct {
 	Host string `json:"host"`
 }
 
+//Config 全部配置.
 type Config struct {
 	Manager   ManagerConfig     `json:"manager"`
 	Harvester HarvesterConfig   `json:"harvester"`
@@ -105,17 +115,22 @@ type Config struct {
 }
 
 //Init 加载配置文件
-func Init() error {
+func Init(configChan chan<- struct{}) error {
 	if err := loadConfig(); err != nil {
-		return err
+		return errors.Trace(err)
+	}
+
+	if err := loadProcessor(configChan); err != nil {
+		return errors.Trace(err)
 	}
 
 	go reloadConfig()
-	go reloadProcessor()
+	go reloadProcessor(configChan)
 
 	return nil
 }
 
+//ModuleKey 生成kafka中topic名.
 func ModuleKey(app, module string) string {
 	return fmt.Sprintf("a-%v-m-%v", app, module)
 }
@@ -132,7 +147,7 @@ func topics(name, modules string) []string {
 
 func match(cond string) []MatchConfig {
 	ms := []MatchConfig{}
-	for _, c := range util.TrimSplit(cond, ",") {
+	for _, c := range util.TrimSplit(cond, " && ") {
 		kvs := util.TrimSplit(c, " ")
 		if len(kvs) < 2 {
 			log.Errorf("invalid line:%v", c)
@@ -164,6 +179,7 @@ var (
 	oldBuf []byte
 )
 
+//AlertConfig 报警配置.
 type AlertConfig struct {
 	Name      string
 	APP       string
@@ -174,10 +190,10 @@ type AlertConfig struct {
 	Message   string
 }
 
-func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
+func loadProcessorConfig(url string) ([]ProcessorConfig, []string, error) {
 	buf, _, err := client.New(time.Second*5).Get(url, nil, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Annotatef(err, "url:%v", url)
 	}
 
 	if bytes.Equal(oldBuf, buf) {
@@ -186,8 +202,10 @@ func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
 
 	acs := []AlertConfig{}
 	if err = json.Unmarshal(buf, &acs); err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Annotatef(err, "url:%v, buf:%s", url, buf)
 	}
+
+	log.Debugf("AlertConfig:%+v", acs)
 
 	tpss := make(map[string]interface{})
 	pcs := []ProcessorConfig{}
@@ -201,7 +219,7 @@ func loadProcessor(url string) ([]ProcessorConfig, []string, error) {
 			Match: match(ac.Condition),
 		}
 
-		tps := topics(ac.Name, ac.Modules)
+		tps := topics(ac.APP, ac.Modules)
 		pc := ProcessorConfig{
 			Topics: tps,
 			Rules:  []RulesConfig{rs},
@@ -240,22 +258,32 @@ func reloadConfig() {
 	}
 }
 
-func reloadProcessor() {
-	t := time.NewTicker(reloadInterval)
+func loadProcessor(configChan chan<- struct{}) error {
 	url := fmt.Sprintf("http://%v/api/alerts/", cfg.Manager.Host)
+	p, tps, err := loadProcessorConfig(url)
+	if err != nil {
+		log.Errorf("loadProcessorConfig error:%v", errors.ErrorStack(err))
+		return errors.Trace(err)
+	}
+
+	if p == nil && tps == nil {
+		return nil
+	}
+
+	cfg.Processor = p
+	cfg.Harvester.Topics = tps
+	configChan <- struct{}{}
+	log.Infof("new config:%+v", cfg)
+	return nil
+}
+
+func reloadProcessor(configChan chan<- struct{}) {
+	t := time.NewTicker(reloadInterval)
 
 	for range t.C {
-		p, tps, err := loadProcessor(url)
-		if err != nil {
-			log.Errorf("loadProcessor error:%v", err)
-			continue
+		if err := loadProcessor(configChan); err != nil {
+			log.Errorf("loadProcessor error:%v", errors.ErrorStack(err))
 		}
-		if p == nil && tps == nil {
-			continue
-		}
-		cfg.Processor = p
-		cfg.Harvester.Topics = tps
-		log.Debugf("new config:%+v", cfg)
 	}
 }
 
@@ -288,10 +316,12 @@ func GetConfig() (*Config, error) {
 	return cfg, nil
 }
 
+//EnableMail 是否启用mail.
 func (ac ActionConfig) EnableMail() bool {
 	return len(ac.MailTo) > 0 && ac.MailTo[0] != ""
 }
 
+//EnableMessage 是否发短信.
 func (ac ActionConfig) EnableMessage() bool {
 	return len(ac.MessageTo) > 0 && ac.MessageTo[0] != ""
 }

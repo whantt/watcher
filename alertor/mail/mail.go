@@ -56,6 +56,7 @@ func (ma *mailAlertor) Handler(msg *meta.Message, ac config.ActionConfig) error 
 	}
 
 	body := buf.String()
+	log.Debugf("body:%v", body)
 	if *webMail {
 		return sendWeb(msg, ac.MailTo, title, body)
 	}

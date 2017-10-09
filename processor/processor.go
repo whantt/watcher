@@ -53,12 +53,12 @@ func handler(msg *meta.Message, mc []config.MatchConfig) (bool, error) {
 		if exist {
 			val = vo.(string)
 		}
-		msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("begin key:%v, exist:%v expr `%v` `%v`", m.Key, exist, val, m.Value))
+		msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("begin key:%v, exist:%v value:%v, expect:%v", m.Key, exist, val, m.Value))
 		if !match(m.Method, exist, val, m.Value) {
-			msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("end key:%v no match `%v` `%v`", m.Key, val, m.Value))
+			msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("end key:%v no match value:%v, expect:%v", m.Key, val, m.Value))
 			return false, nil
 		}
-		msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("end key:%v match `%v` ` %v`", m.Key, val, m.Value))
+		msg.Trace(meta.StageProcessor, m.Method, fmt.Sprintf("end key:%v match value:%v expect:%v", m.Key, val, m.Value))
 	}
 	return true, nil
 }

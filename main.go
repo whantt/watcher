@@ -17,6 +17,7 @@ import (
 	_ "github.com/dearcode/watcher/editor/json"
 	_ "github.com/dearcode/watcher/editor/regexp"
 	_ "github.com/dearcode/watcher/editor/remove"
+	_ "github.com/dearcode/watcher/editor/rename"
 	_ "github.com/dearcode/watcher/editor/sqlhandle"
 	"github.com/dearcode/watcher/harvester"
 	_ "github.com/dearcode/watcher/harvester/kafka"
@@ -36,7 +37,10 @@ func main() {
 		log.SetLevel(log.LOG_LEVEL_ALL)
 	}
 
-	if err := config.Init(); err != nil {
+	msgChan := make(chan *meta.Message, 1)
+	configChan := make(chan struct{}, 1)
+
+	if err := config.Init(configChan); err != nil {
 		panic(errors.ErrorStack(err))
 	}
 
@@ -44,7 +48,7 @@ func main() {
 		panic(errors.ErrorStack(err))
 	}
 
-	if err := harvester.Init(); err != nil {
+	if err := harvester.Init(msgChan); err != nil {
 		panic(errors.ErrorStack(err))
 	}
 
@@ -56,11 +60,16 @@ func main() {
 		panic(errors.ErrorStack(err))
 	}
 
-	reader := harvester.Reader()
-
 	for i := 0; i < 10; i++ {
-		go worker(reader)
+		go worker(msgChan)
 	}
+
+	go func() {
+		for range configChan {
+			harvester.Stop()
+			harvester.Init(msgChan)
+		}
+	}()
 
 	shutdown := make(chan os.Signal)
 	signal.Notify(shutdown, syscall.SIGUSR1, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT)

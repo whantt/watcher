@@ -1,4 +1,4 @@
-package json
+package remove
 
 import (
 	"github.com/zssky/log"

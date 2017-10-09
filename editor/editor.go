@@ -12,6 +12,7 @@ var (
 	models = map[string]Editor{}
 )
 
+// Editor 编辑器通用接口.
 type Editor interface {
 	Handler(msg *meta.Message, argv map[string]interface{}) error
 }
@@ -36,6 +37,7 @@ func Register(name string, m Editor) {
 	log.Debugf("new mode:%v", name)
 }
 
+// Run run ...
 func Run(msg *meta.Message) error {
 	ec, err := config.GetConfig()
 	if err != nil {

@@ -16,18 +16,19 @@ import (
 )
 
 var (
-	kh = kafkHarvester{}
+	kh = kafkaHarvester{}
 )
 
-type kafkHarvester struct {
+type kafkaHarvester struct {
 	consumer *cluster.Consumer
+	msgChan  chan<- *meta.Message
 }
 
 func init() {
 	harvester.Register("kafka", &kh)
 }
 
-func (kh *kafkHarvester) Init(hc config.HarvesterConfig) error {
+func (kh *kafkaHarvester) Init(hc config.HarvesterConfig, msgChan chan<- *meta.Message) error {
 	cc := cluster.NewConfig()
 	cc.ClientID = hc.ClientID
 	cc.Consumer.Offsets.Initial = sarama.OffsetOldest
@@ -43,23 +44,18 @@ func (kh *kafkHarvester) Init(hc config.HarvesterConfig) error {
 	}
 
 	kh.consumer = consumer
+	kh.msgChan = msgChan
+
+	go kh.run()
 
 	return nil
 }
 
-func (kh *kafkHarvester) Start() <-chan *meta.Message {
-	c := make(chan *meta.Message)
-
-	go kh.run(c)
-
-	return c
-}
-
-func (kh *kafkHarvester) Stop() {
+func (kh *kafkaHarvester) Stop() {
 	kh.consumer.Close()
 }
 
-func (kh *kafkHarvester) run(c chan *meta.Message) {
+func (kh *kafkaHarvester) run() {
 	for {
 		select {
 		case msg, ok := <-kh.consumer.Messages():
@@ -67,7 +63,7 @@ func (kh *kafkHarvester) run(c chan *meta.Message) {
 				log.Errorf("consumer Messages error")
 				return
 			}
-			c <- meta.NewMessage(msg.Topic, string(msg.Value))
+			kh.msgChan <- meta.NewMessage(msg.Topic, string(msg.Value))
 			log.Debugf("topic:%v, offset:%v, value:%v", msg.Topic, msg.Offset, string(msg.Value))
 			kh.consumer.MarkOffset(msg, "")
 		case err, ok := <-kh.consumer.Errors():

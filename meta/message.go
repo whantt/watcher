@@ -105,7 +105,7 @@ func (m *Message) TraceStack() string {
 
 	for i := StageHarvester; i < StageMAX; i++ {
 		for _, s := range m.trace[i].Status {
-			fmt.Fprintf(buf, "%v %v %v %v\n", s.Time, i, s.Model, s.Result)
+			fmt.Fprintf(buf, "%v %v %v %v\n", s.Time.Format(time.RFC3339), i, s.Model, s.Result)
 		}
 	}
 	return buf.String()
